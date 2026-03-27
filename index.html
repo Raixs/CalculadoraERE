@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Inteligente de ERE y Finiquito</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- LIBRERÍA PDF.JS PARA LECTURA LOCAL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+    <!-- LIBRERÍA ZIP.JS PARA DESCOMPRIMIR CON CONTRASEÑA EN EL NAVEGADOR -->
+    <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.34/dist/zip.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .drag-active { border-color: #10b981; background-color: #ecfdf5; }
+        .smooth-transition { transition: all 0.3s ease; }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navegación -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-shield-halved text-emerald-600 text-2xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">Calculadora<span class="text-emerald-600">ERE</span> <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full ml-2">100% Privado</span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                Calcula tu indemnización y finiquito
+            </h1>
+            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+                Sube tu nómina. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b> (gestorías). Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
+            </p>
+        </div>
+
+        <!-- SECCIÓN 1: Subida de archivo -->
+        <div id="upload-section" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center smooth-transition">
+            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 cursor-pointer hover:bg-gray-50 transition-colors" role="button" tabindex="0" aria-label="Seleccionar nómina PDF o ZIP" aria-controls="file-input">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <i class="fa-solid fa-file-pdf text-5xl text-red-500"></i>
+                    <i class="fa-solid fa-file-zipper text-5xl text-yellow-500"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">Sube tu nómina (PDF o ZIP)</h3>
+                <p class="text-sm text-gray-500 mb-4">Arrastra y suelta tu archivo aquí, o haz clic para buscar</p>
+                <div class="inline-flex items-center justify-center px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md mb-2">
+                    <i class="fa-solid fa-lock mr-2"></i> Procesamiento 100% Seguro y Local
+                </div>
+                <input type="file" id="file-input" class="hidden" accept="application/pdf, application/zip, .zip">
+            </div>
+            <button onclick="openFilePicker()" class="mt-6 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
+                Seleccionar Archivo
+            </button>
+        </div>
+
+        <!-- SECCIÓN 2: Carga / Procesamiento Local -->
+        <div id="loading-section" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-emerald-600 mb-4"></div>
+            <h3 id="loading-text" class="text-xl font-medium text-gray-900">Procesando archivo...</h3>
+            <p id="loading-subtext" class="mt-2 text-sm text-gray-500">Extrayendo datos de forma segura en tu navegador.</p>
+        </div>
+
+        <!-- SECCIÓN 3: Calculadora y Resultados -->
+        <div id="calculator-section" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Columna Izquierda: Entradas y Negociación -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- 1. Tarjeta de Datos Extraídos -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
+                        <h2 class="text-lg font-semibold text-blue-900 flex items-center">
+                            <span class="bg-blue-600 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">1</span> Datos de tu Contrato
+                        </h2>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <i class="fa-solid fa-check mr-1"></i> Extraídos automáticamente
+                        </span>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Salario Bruto Mensual (Total Devengado)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">€</span>
+                                </div>
+                                <input type="number" id="input-salario" class="pl-8 block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2000">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio (Antigüedad)</label>
+                            <input type="date" id="input-fecha" class="block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2020-01-01">
+                        </div>
+                        <div class="sm:col-span-2 flex items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <input id="input-prorrateo" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                            <label for="input-prorrateo" class="ml-3 block text-sm text-gray-800">
+                                <span class="font-medium">Pagas extra prorrateadas</span><br>
+                                <span class="text-gray-500 text-xs">Desmarca esta casilla si cobras 14 pagas al año.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Tarjeta de Datos del Despido -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-orange-50 px-6 py-4 border-b border-orange-100">
+                        <h2 class="text-lg font-semibold text-orange-900 flex items-center">
+                            <span class="bg-orange-500 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">2</span> Condiciones del Despido (Finiquito)
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha efectiva del despido</label>
+                                <input type="date" id="input-fecha-despido" class="block w-full border-gray-300 rounded-md border focus:ring-orange-500 focus:border-orange-500 sm:text-sm p-2.5">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">¿Días de vacaciones que te quedan?</label>
+                                <div class="relative">
+                                    <input type="number" id="input-vacaciones" class="block w-full border-gray-300 rounded-md border focus:ring-orange-500 focus:border-orange-500 sm:text-sm p-2.5" value="0" min="0">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">días</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-5">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">¿La empresa te ha dado los 15 días de preaviso legal?</label>
+                            <select id="select-preaviso" class="block w-full border-gray-300 rounded-md border focus:ring-orange-500 focus:border-orange-500 sm:text-sm p-2.5">
+                                <option value="0">Sí, me han avisado con tiempo (No te deben nada)</option>
+                                <option value="15">No, me despiden hoy mismo (Te deben pagar 15 días)</option>
+                                <option value="custom">Me han avisado, pero con menos de 15 días...</option>
+                            </select>
+                            
+                            <div id="div-preaviso-custom" class="mt-3 hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <label class="block text-sm text-gray-700 mb-1">¿Cuántos días de preaviso <b>han faltado</b> para llegar a 15?</label>
+                                <input type="number" id="input-preaviso" class="block w-full border-gray-300 rounded-md border sm:text-sm p-2" value="0" min="0" max="15">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Tarjeta de Variables de Negociación -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <span class="bg-gray-700 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">3</span> Escenario de Negociación (ERE)
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Indemnización (Días por año trabajado)</label>
+                                <span id="val-dias" class="text-sm font-bold text-blue-600">20 días</span>
+                            </div>
+                            <input type="range" id="slider-dias" min="20" max="45" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
+                            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>Mínimo Legal (20)</span>
+                                <span>Máximo Antiguo (45)</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Tope máximo (Mensualidades)</label>
+                                <span id="val-topes" class="text-sm font-bold text-blue-600">12 meses</span>
+                            </div>
+                            <input type="range" id="slider-topes" min="12" max="42" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
+                            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>ERE Objetivo (12)</span>
+                                <span>Máximo Legal (42)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Resultados -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- Desglose -->
+                <div class="bg-gray-900 rounded-2xl shadow-lg border border-gray-800 overflow-hidden text-white sticky top-6">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold mb-6">Resumen a percibir</h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center pb-4 border-b border-gray-700">
+                                <div><p class="text-sm text-gray-400">Salario Bruto Anual</p></div>
+                                <span id="res-salario-anual" class="text-lg font-semibold">0,00 €</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-4 border-b border-gray-700">
+                                <div><p class="text-sm text-gray-400">Antigüedad Computable</p></div>
+                                <span id="res-antiguedad" class="text-lg font-semibold">0 años y 0 meses</span>
+                            </div>
+                            <div class="pt-2">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-base font-medium text-blue-400">1. Indemnización ERE</p>
+                                    <span id="res-indemnizacion" class="text-xl font-bold text-blue-400">0,00 €</span>
+                                </div>
+                                <p id="msg-tope" class="text-xs text-yellow-500 hidden"><i class="fa-solid fa-triangle-exclamation"></i> Topado a <span id="txt-tope-meses">12</span> mensualidades</p>
+                            </div>
+                            <div class="pt-2">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-base font-medium text-orange-400">2. Finiquito Ordinario</p>
+                                    <span id="res-finiquito" class="text-xl font-bold text-orange-400">0,00 €</span>
+                                </div>
+                                <ul class="text-xs text-gray-400 space-y-1 mt-2 pl-2">
+                                    <li class="flex justify-between"><span>Vacaciones no disfrutadas:</span> <span id="res-vacaciones">0,00 €</span></li>
+                                    <li class="flex justify-between"><span>Falta de preaviso:</span> <span id="res-preaviso">0,00 €</span></li>
+                                    <li class="flex justify-between" id="row-pagas-extra"><span>Pagas extra pendientes:</span> <span id="res-pagas-extra">0,00 €</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-6">
+                        <p class="text-sm text-gray-300 font-medium mb-1">Total Bruto Estimado</p>
+                        <div class="flex justify-between items-end">
+                            <span id="res-total" class="text-4xl font-extrabold text-emerald-400">0,00 €</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-3 opacity-90 leading-relaxed">* La indemnización ERE está <b>exenta de IRPF</b>.<br>* El finiquito ordinario <b>sí tributa IRPF</b>.</p>
+                    </div>
+                </div>
+
+                <button onclick="resetApp()" class="w-full py-3 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                    <i class="fa-solid fa-arrow-rotate-left mr-2"></i> Calcular otro documento
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL CONTRASEÑA ZIP (NUEVO) -->
+    <div id="password-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                        <i class="fa-solid fa-lock text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Nómina Protegida con Contraseña</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">Este archivo ZIP está bloqueado. Generalmente, la gestoría usa tu <b>DNI o NIE</b> (con letra mayúscula) como contraseña.</p>
+                        </div>
+                        <div class="mt-4">
+                            <input type="text" id="zip-password-input" class="shadow-sm focus:ring-emerald-500 focus:border-emerald-500 block w-full sm:text-lg border-gray-300 rounded-md p-3 text-center border font-mono" placeholder="Ej: 12345678Z">
+                            <p id="password-error" class="text-red-500 text-xs mt-2 hidden">Contraseña incorrecta. Inténtalo de nuevo.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-col-reverse sm:flex-row sm:space-x-3">
+                    <button type="button" onclick="cancelZipPassword()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="submitZipPassword()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:w-auto sm:text-sm">
+                        Desbloquear Archivo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de error -->
+    <div id="error-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <i class="fa-solid fa-triangle-exclamation text-red-600 text-xl"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Error al leer el Documento</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">No hemos podido procesar la nómina automáticamente. Te abriremos la calculadora con datos manuales para que puedas usarla de todos modos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6">
+                    <button type="button" onclick="closeErrorAndProceed()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:text-sm">
+                        Continuar Manualmente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const sectionUpload = document.getElementById('upload-section');
+        const sectionLoading = document.getElementById('loading-section');
+        const sectionCalculator = document.getElementById('calculator-section');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const errorModal = document.getElementById('error-modal');
+        const passwordModal = document.getElementById('password-modal');
+        const zipPasswordInput = document.getElementById('zip-password-input');
+        const passwordError = document.getElementById('password-error');
+        const loadingText = document.getElementById('loading-text');
+
+        // Inputs Calculadora
+        const inputSalario = document.getElementById('input-salario');
+        const inputFecha = document.getElementById('input-fecha');
+        const inputFechaDespido = document.getElementById('input-fecha-despido');
+        const inputProrrateo = document.getElementById('input-prorrateo');
+        const sliderDias = document.getElementById('slider-dias');
+        const sliderTopes = document.getElementById('slider-topes');
+        const inputVacaciones = document.getElementById('input-vacaciones');
+        
+        const selectPreaviso = document.getElementById('select-preaviso');
+        const divPreavisoCustom = document.getElementById('div-preaviso-custom');
+        const inputPreaviso = document.getElementById('input-preaviso');
+
+        const valDias = document.getElementById('val-dias');
+        const valTopes = document.getElementById('val-topes');
+        const txtTopeMeses = document.getElementById('txt-tope-meses');
+
+        // Outputs
+        const resSalarioAnual = document.getElementById('res-salario-anual');
+        const resAntiguedad = document.getElementById('res-antiguedad');
+        const resIndemnizacion = document.getElementById('res-indemnizacion');
+        const msgTope = document.getElementById('msg-tope');
+        const resFiniquito = document.getElementById('res-finiquito');
+        const resVacaciones = document.getElementById('res-vacaciones');
+        const resPreaviso = document.getElementById('res-preaviso');
+        const rowPagasExtra = document.getElementById('row-pagas-extra');
+        const resPagasExtra = document.getElementById('res-pagas-extra');
+        const resTotal = document.getElementById('res-total');
+
+        inputFechaDespido.valueAsDate = new Date();
+
+        // Variable global para almacenar el archivo zip pendiente
+        let currentZipFile = null;
+
+        function openFilePicker() {
+            // Permite volver a seleccionar el mismo archivo y disparar siempre "change".
+            fileInput.value = "";
+            fileInput.click();
+        }
+
+        // --- LÓGICA DE EVENTOS Drag & Drop ---
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+        });
+
+        dropZone.addEventListener('click', openFilePicker);
+        dropZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openFilePicker();
+            }
+        });
+        dropZone.addEventListener('drop', (e) => { handleFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', function() { handleFiles(this.files); });
+
+        selectPreaviso.addEventListener('change', () => {
+            if (selectPreaviso.value === 'custom') {
+                divPreavisoCustom.classList.remove('hidden');
+            } else {
+                divPreavisoCustom.classList.add('hidden');
+                inputPreaviso.value = selectPreaviso.value;
+            }
+            calcularLiquidacion();
+        });
+
+        const inputsCalculo = [inputSalario, inputFecha, inputFechaDespido, inputProrrateo, sliderDias, sliderTopes, inputVacaciones, inputPreaviso];
+        inputsCalculo.forEach(input => {
+            input.addEventListener('input', () => {
+                if(input === sliderDias) valDias.textContent = `${sliderDias.value} días`;
+                if(input === sliderTopes) {
+                    valTopes.textContent = `${sliderTopes.value} meses`;
+                    txtTopeMeses.textContent = sliderTopes.value;
+                }
+                calcularLiquidacion();
+            });
+        });
+
+        // --- MANEJO DE ARCHIVOS (PDF Y ZIP) ---
+
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            
+            // Si es un archivo ZIP
+            if (file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+                currentZipFile = file;
+                passwordError.classList.add('hidden');
+                zipPasswordInput.value = '';
+                passwordModal.classList.remove('hidden');
+                zipPasswordInput.focus();
+                return;
+            }
+            
+            // Si es un archivo PDF
+            if (file.type === 'application/pdf') {
+                iniciarProcesamiento(file, "Leyendo documento PDF...");
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    await procesarPDFLocal(arrayBuffer);
+                } catch (error) {
+                    mostrarError();
+                }
+                return;
+            }
+
+            alert("Sube un PDF o un archivo ZIP.");
+        }
+
+        // --- LÓGICA DE CONTRASEÑA ZIP ---
+
+        function cancelZipPassword() {
+            passwordModal.classList.add('hidden');
+            currentZipFile = null;
+            fileInput.value = "";
+        }
+
+        zipPasswordInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') submitZipPassword();
+        });
+
+        async function submitZipPassword() {
+            const password = zipPasswordInput.value.trim();
+            if (!password) return;
+
+            passwordError.classList.add('hidden');
+            
+            try {
+                // Crear lector de ZIP de memoria (cliente)
+                const zipReader = new zip.ZipReader(new zip.BlobReader(currentZipFile), { password: password });
+                const entries = await zipReader.getEntries();
+                
+                // Buscar el PDF dentro del zip
+                const pdfEntry = entries.find(entry => entry.filename.toLowerCase().endsWith('.pdf'));
+                
+                if (!pdfEntry) {
+                    alert("El archivo ZIP se abrió, pero no contiene ningún PDF dentro.");
+                    cancelZipPassword();
+                    return;
+                }
+
+                // Extraer a memoria RAM (ArrayBuffer)
+                const pdfData = await pdfEntry.getData(new zip.Uint8ArrayWriter());
+                await zipReader.close();
+
+                // Si llegamos aquí, la contraseña funcionó.
+                passwordModal.classList.add('hidden');
+                iniciarProcesamiento(currentZipFile, "Descomprimido con éxito. Leyendo PDF interno...");
+                
+                // Pasar el arrayBuffer desencriptado al procesador PDF normal
+                await procesarPDFLocal(pdfData.buffer);
+
+            } catch (error) {
+                console.error("Error ZIP:", error);
+                // Si falla, suele ser por Invalid Password
+                passwordError.classList.remove('hidden');
+                zipPasswordInput.value = '';
+                zipPasswordInput.focus();
+            }
+        }
+
+        function iniciarProcesamiento(file, mensaje) {
+            sectionUpload.classList.add('hidden');
+            loadingText.textContent = mensaje;
+            sectionLoading.classList.remove('hidden');
+        }
+
+        // --- EXTRACCIÓN DE DATOS DEL PDF (HEURÍSTICAS) ---
+
+        async function procesarPDFLocal(arrayBuffer) {
+            try {
+                const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
+                const pdf = await loadingTask.promise;
+                
+                let text = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    text += textContent.items.map(item => item.str).join(' ') + " ";
+                }
+
+                const normalizedText = text.replace(/\s+/g, ' ');
+
+                let extraido = {
+                    salario_bruto_mensual: 2000,
+                    fecha_antiguedad: "2020-01-01",
+                    pagas_extra_prorrateadas: false
+                };
+
+                // Antigüedad
+                const antiRegex = /(?:ANTIGUEDA\s*D|ANTIG[UÜ]EDAD|FECHA ALTA)[\s\S]{1,100}?(\d{1,2})\s+(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)\s+(\d{2,4})/i;
+                const antiMatch = normalizedText.match(antiRegex);
+                
+                if (antiMatch) {
+                    const day = antiMatch[1].padStart(2, '0');
+                    const monthNames = { 'ENE': '01', 'FEB': '02', 'MAR': '03', 'ABR': '04', 'MAY': '05', 'JUN': '06', 'JUL': '07', 'AGO': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DIC': '12' };
+                    const month = monthNames[antiMatch[2].toUpperCase()];
+                    let year = antiMatch[3];
+                    if (year.length === 2) year = '20' + year;
+                    extraido.fecha_antiguedad = `${year}-${month}-${day}`;
+                }
+
+                // Pagas extra
+                if (/(?:PAGAS?\s+EXTRAS?|P\.P\.EXTRAS?|PRORRATA)/i.test(normalizedText)) {
+                    extraido.pagas_extra_prorrateadas = true;
+                }
+
+                // Salario Bruto Devengado
+                const allAmountsMatches = [...normalizedText.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)];
+                const amounts = allAmountsMatches.map(m => parseFloat(m[1].replace(/\./g, '').replace(',', '.')));
+                const uniqueAmounts = [...new Set(amounts)].filter(a => a > 500);
+                
+                if (uniqueAmounts.length > 0) {
+                    uniqueAmounts.sort((a, b) => b - a);
+                    if (/COSTE EMPRESA/i.test(normalizedText) && uniqueAmounts.length > 1) {
+                        extraido.salario_bruto_mensual = uniqueAmounts[1];
+                    } else {
+                        extraido.salario_bruto_mensual = uniqueAmounts[0];
+                    }
+                }
+
+                inputSalario.value = extraido.salario_bruto_mensual;
+                inputFecha.value = extraido.fecha_antiguedad;
+                inputProrrateo.checked = extraido.pagas_extra_prorrateadas;
+
+                setTimeout(() => {
+                    sectionLoading.classList.add('hidden');
+                    sectionUpload.classList.add('hidden');
+                    sectionCalculator.classList.remove('hidden');
+                    calcularLiquidacion();
+                }, 800);
+
+            } catch (error) {
+                console.error("Fallo procesando el PDF:", error);
+                mostrarError();
+            }
+        }
+
+        function mostrarError() {
+            sectionLoading.classList.add('hidden');
+            errorModal.classList.remove('hidden');
+        }
+
+        function closeErrorAndProceed() {
+            errorModal.classList.add('hidden');
+            sectionUpload.classList.add('hidden');
+            sectionCalculator.classList.remove('hidden');
+            calcularLiquidacion();
+        }
+
+        function resetApp() {
+            sectionCalculator.classList.add('hidden');
+            sectionUpload.classList.remove('hidden');
+            fileInput.value = "";
+            currentZipFile = null;
+            sliderDias.value = 20; valDias.textContent = "20 días";
+            sliderTopes.value = 12; valTopes.textContent = "12 meses";
+            inputVacaciones.value = 0;
+            selectPreaviso.value = "0";
+            inputPreaviso.value = 0;
+            divPreavisoCustom.classList.add('hidden');
+            inputFechaDespido.valueAsDate = new Date();
+        }
+
+        // --- LÓGICA MATEMÁTICA ---
+        function calcularLiquidacion() {
+            const salarioMensual = parseFloat(inputSalario.value) || 0;
+            const fechaAntiguedad = new Date(inputFecha.value);
+            const fechaDespido = new Date(inputFechaDespido.value) || new Date();
+            const prorrateado = inputProrrateo.checked;
+            const diasPorAno = parseInt(sliderDias.value);
+            const topeMeses = parseInt(sliderTopes.value);
+            const diasVacaciones = parseInt(inputVacaciones.value) || 0;
+            
+            let diasPreaviso = selectPreaviso.value === 'custom' ? (parseInt(inputPreaviso.value) || 0) : (parseInt(selectPreaviso.value) || 0);
+
+            const multiplicadorPagas = prorrateado ? 12 : 14;
+            const salarioAnual = salarioMensual * multiplicadorPagas;
+            const salarioDiario = salarioAnual / 365;
+
+            let mesesAntiguedad = 0;
+            if (fechaAntiguedad < fechaDespido) {
+                const diffAños = fechaDespido.getFullYear() - fechaAntiguedad.getFullYear();
+                const diffMeses = fechaDespido.getMonth() - fechaAntiguedad.getMonth();
+                const diffDias = fechaDespido.getDate() - fechaAntiguedad.getDate();
+                mesesAntiguedad = (diffAños * 12) + diffMeses;
+                if (diffDias > 0) mesesAntiguedad += 1;
+            }
+            if (mesesAntiguedad < 0) mesesAntiguedad = 0;
+            
+            const añosParaCalculo = mesesAntiguedad / 12;
+            const añosDisplay = Math.floor(mesesAntiguedad / 12);
+            const mesesDisplay = mesesAntiguedad % 12;
+
+            let indemnizacion = añosParaCalculo * diasPorAno * salarioDiario;
+            
+            const mensualidadTope = salarioAnual / 12;
+            const topeMaximoDinero = topeMeses * mensualidadTope;
+
+            let indemnizacionFinal = indemnizacion;
+            let haTopado = false;
+            
+            if (indemnizacion > topeMaximoDinero) {
+                indemnizacionFinal = topeMaximoDinero;
+                haTopado = true;
+            }
+
+            const pagoVacaciones = diasVacaciones * salarioDiario;
+            const pagoPreaviso = diasPreaviso * salarioDiario;
+            
+            let pagoPagasExtra = 0;
+            if (!prorrateado) {
+                const inicioAno = new Date(fechaDespido.getFullYear(), 0, 1);
+                const diasEnAno = Math.floor((fechaDespido - inicioAno) / (1000 * 60 * 60 * 24)) + 1;
+                const pagasExtraAnuales = salarioMensual * 2;
+                pagoPagasExtra = pagasExtraAnuales * (diasEnAno / 365);
+                rowPagasExtra.style.display = 'flex';
+            } else {
+                rowPagasExtra.style.display = 'none';
+            }
+            
+            const totalFiniquito = pagoVacaciones + pagoPreaviso + pagoPagasExtra;
+            const totalPercibir = indemnizacionFinal + totalFiniquito;
+
+            const formatoMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+
+            resSalarioAnual.textContent = formatoMoneda.format(salarioAnual);
+            resAntiguedad.textContent = `${añosDisplay} años y ${mesesDisplay} meses`;
+            resIndemnizacion.textContent = formatoMoneda.format(indemnizacionFinal);
+            msgTope.style.display = haTopado ? 'block' : 'none';
+            resFiniquito.textContent = formatoMoneda.format(totalFiniquito);
+            resVacaciones.textContent = formatoMoneda.format(pagoVacaciones);
+            resPreaviso.textContent = formatoMoneda.format(pagoPreaviso);
+            resPagasExtra.textContent = formatoMoneda.format(pagoPagasExtra);
+            resTotal.textContent = formatoMoneda.format(totalPercibir);
+        }
+    </script>
+</body>
+</html>
