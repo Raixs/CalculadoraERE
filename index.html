@@ -110,7 +110,7 @@
                             </div>
                         </div>
 
-                        <!-- NUEVO: Campo de comisiones -->
+                        <!-- Campo de comisiones -->
                         <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
                             <label class="block text-sm font-medium text-blue-900 mb-1">Promedio de Comisiones / Bonus (últimos 12 meses)</label>
                             <div class="relative mt-1">
@@ -119,7 +119,7 @@
                                 </div>
                                 <input type="number" id="input-comisiones" class="pl-16 block w-full border-blue-200 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5 bg-white" value="0">
                             </div>
-                            <p class="text-xs text-blue-700 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> <b>Importante:</b> La ley exige calcular el despido basándose en la media mensual de tus variables del último año, no en lo cobrado este mes.</p>
+                            <p class="text-xs text-blue-700 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> <b>Importante:</b> La ley exige calcular el despido basándose en la media mensual de tus variables del último año.</p>
                         </div>
 
                         <div class="flex items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -173,35 +173,83 @@
                 </div>
 
                 <!-- 3. Tarjeta de Variables de Negociación -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <!-- Quitamos el overflow-hidden de aquí para que los tooltips (z-index) no se corten -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-2xl">
                         <h2 class="text-lg font-semibold text-gray-800 flex items-center">
                             <span class="bg-gray-700 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">3</span> Escenario de Negociación (ERE)
                         </h2>
                     </div>
                     <div class="p-6 space-y-6">
+
+                        <!-- Panel de "Poder de Negociación" -->
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                                <div class="pr-4">
+                                    <h3 class="text-base font-bold text-emerald-900 flex items-center mb-1">
+                                        <i class="fa-solid fa-handshake-angle mr-2 text-emerald-600"></i> Tu peso en la negociación
+                                    </h3>
+                                    <p class="text-sm text-emerald-800 leading-relaxed">
+                                        Por cada <b>día extra por año</b> que se logre subir en el acuerdo del ERE, tu indemnización total aumentará en:
+                                    </p>
+                                </div>
+                                <div class="mt-4 sm:mt-0 text-right whitespace-nowrap bg-white px-4 py-3 rounded-lg shadow-sm border border-emerald-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-arrow-trend-up text-emerald-500 mr-3 text-xl"></i>
+                                    <span id="res-valor-por-ano" class="text-3xl font-black text-emerald-600">0,00 €</span>
+                                </div>
+                            </div>
+                            <!-- ID oculto para compatibilidad con el motor de cálculo JS -->
+                            <span id="res-salario-diario" class="hidden"></span>
+                        </div>
+
+                        <!-- Slider: Días de Indemnización -->
                         <div>
-                            <div class="flex justify-between mb-1">
-                                <label class="block text-sm font-medium text-gray-700">Indemnización (Días por año trabajado)</label>
+                            <div class="flex justify-between mb-1 relative">
+                                <label class="block text-sm font-medium text-gray-700 flex items-center">
+                                    Indemnización (Días por año trabajado)
+                                    <div class="group relative ml-2 flex items-center">
+                                        <i class="fa-solid fa-circle-info text-blue-400 hover:text-blue-600 cursor-help transition-colors"></i>
+                                        <!-- Tooltip -->
+                                        <div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-64 p-3 text-xs text-white bg-gray-900 rounded-lg shadow-xl z-50 pointer-events-none">
+                                            <p class="font-semibold mb-1">Días por año trabajado</p>
+                                            <p class="text-gray-300">En un ERE (causas objetivas) el mínimo legal asegurado son 20 días. El despido improcedente se abona a 33 días.</p>
+                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                        </div>
+                                    </div>
+                                </label>
                                 <span id="val-dias" class="text-sm font-bold text-blue-600">20 días</span>
                             </div>
-                            <input type="range" id="slider-dias" min="20" max="45" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
+                            <input type="range" id="slider-dias" min="20" max="33" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
                             <div class="flex justify-between text-xs text-gray-400 mt-1">
                                 <span>Mínimo Legal (20)</span>
-                                <span>Máximo Antiguo (45)</span>
+                                <span>Improcedente (33)</span>
                             </div>
                         </div>
+
+                        <!-- Slider: Tope Máximo -->
                         <div>
-                            <div class="flex justify-between mb-1">
-                                <label class="block text-sm font-medium text-gray-700">Tope máximo (Mensualidades)</label>
+                            <div class="flex justify-between mb-1 relative">
+                                <label class="block text-sm font-medium text-gray-700 flex items-center">
+                                    Tope máximo (Mensualidades)
+                                    <div class="group relative ml-2 flex items-center">
+                                        <i class="fa-solid fa-circle-info text-blue-400 hover:text-blue-600 cursor-help transition-colors"></i>
+                                        <!-- Tooltip -->
+                                        <div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-64 p-3 text-xs text-white bg-gray-900 rounded-lg shadow-xl z-50 pointer-events-none">
+                                            <p class="font-semibold mb-1">Límite de la indemnización</p>
+                                            <p class="text-gray-300">El ERE impone un límite de 12 mensualidades a cobrar. Un acuerdo puede ampliar este límite hasta las 24 mensualidades (tope del improcedente).</p>
+                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                        </div>
+                                    </div>
+                                </label>
                                 <span id="val-topes" class="text-sm font-bold text-blue-600">12 meses</span>
                             </div>
-                            <input type="range" id="slider-topes" min="12" max="42" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
+                            <input type="range" id="slider-topes" min="12" max="24" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:ring-blue-500">
                             <div class="flex justify-between text-xs text-gray-400 mt-1">
                                 <span>ERE Objetivo (12)</span>
-                                <span>Máximo Legal (42)</span>
+                                <span>Máximo Legal (24)</span>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -332,7 +380,7 @@
 
         // Inputs Calculadora
         const inputSalario = document.getElementById('input-salario');
-        const inputComisiones = document.getElementById('input-comisiones'); // NUEVO
+        const inputComisiones = document.getElementById('input-comisiones'); 
         const inputFecha = document.getElementById('input-fecha');
         const inputFechaDespido = document.getElementById('input-fecha-despido');
         const inputProrrateo = document.getElementById('input-prorrateo');
@@ -348,7 +396,11 @@
         const valTopes = document.getElementById('val-topes');
         const txtTopeMeses = document.getElementById('txt-tope-meses');
 
-        // Outputs
+        // Nuevos Outputs de Poder de Negociación
+        const resSalarioDiario = document.getElementById('res-salario-diario');
+        const resValorPorAno = document.getElementById('res-valor-por-ano');
+
+        // Outputs Totales
         const resSalarioAnual = document.getElementById('res-salario-anual');
         const resAntiguedad = document.getElementById('res-antiguedad');
         const resIndemnizacion = document.getElementById('res-indemnizacion');
@@ -495,7 +547,7 @@
             sectionLoading.classList.remove('hidden');
         }
 
-        // --- EXTRACCIÓN DE DATOS DEL PDF (HEURÍSTICAS ACTUALIZADAS PARA COMISIONES) ---
+        // --- EXTRACCIÓN DE DATOS DEL PDF ---
         async function procesarPDFLocal(arrayBuffer) {
             try {
                 const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
@@ -535,8 +587,7 @@
                     extraido.pagas_extra_prorrateadas = true;
                 }
 
-                // COMISIONES (NUEVA LÓGICA)
-                // Busca palabras como COMISION, COMISIONES, INCENTIVO, INCENTIVOS, BONUS
+                // COMISIONES
                 const comisionRegex = /(?:COMISI[OÓ]N(?:ES)?|INCENTIVO(?:S)?|BONUS)[^\d]{1,15}(\d{1,3}(?:\.\d{3})*,\d{2})/i;
                 const comisionMatch = normalizedText.match(comisionRegex);
                 if (comisionMatch) {
@@ -557,7 +608,6 @@
                     }
                 }
 
-                // Ajuste inteligente: Si detectó comisiones, las resta del total devengado para obtener el Salario Fijo Real.
                 if (extraido.comisiones_detectadas > 0 && extraido.salario_bruto_mensual > extraido.comisiones_detectadas) {
                     extraido.salario_bruto_mensual -= extraido.comisiones_detectadas;
                 }
@@ -607,10 +657,10 @@
             inputFechaDespido.valueAsDate = new Date();
         }
 
-        // --- LÓGICA MATEMÁTICA CON VARIABLES (COMISIONES) ---
+        // --- LÓGICA MATEMÁTICA PRINCIPAL ---
         function calcularLiquidacion() {
             const salarioFijoMensual = parseFloat(inputSalario.value) || 0;
-            const comisionesMensuales = parseFloat(inputComisiones.value) || 0; // Media últimos 12 meses
+            const comisionesMensuales = parseFloat(inputComisiones.value) || 0; 
             const fechaAntiguedad = new Date(inputFecha.value);
             const fechaDespido = new Date(inputFechaDespido.value) || new Date();
             const prorrateado = inputProrrateo.checked;
@@ -620,15 +670,11 @@
             
             let diasPreaviso = selectPreaviso.value === 'custom' ? (parseInt(inputPreaviso.value) || 0) : (parseInt(selectPreaviso.value) || 0);
 
-            // CALCULAR SALARIO ANUAL
-            // Fijo: Mensual x 12 o 14 pagas
+            // CALCULAR SALARIO ANUAL Y DIARIO
             const multiplicadorPagas = prorrateado ? 12 : 14;
             const salarioFijoAnual = salarioFijoMensual * multiplicadorPagas;
-            
-            // Variable: Media mensual x 12 meses (Las variables anuales son 12 meses)
             const salarioVariableAnual = comisionesMensuales * 12; 
 
-            // Sumamos ambos para el Salario Anual Computable
             const salarioAnual = salarioFijoAnual + salarioVariableAnual;
             const salarioDiario = salarioAnual / 365;
 
@@ -639,13 +685,16 @@
                 const diffMeses = fechaDespido.getMonth() - fechaAntiguedad.getMonth();
                 const diffDias = fechaDespido.getDate() - fechaAntiguedad.getDate();
                 mesesAntiguedad = (diffAños * 12) + diffMeses;
-                if (diffDias > 0) mesesAntiguedad += 1; // Un solo día ya cuenta como mes entero
+                if (diffDias > 0) mesesAntiguedad += 1; 
             }
             if (mesesAntiguedad < 0) mesesAntiguedad = 0;
             
             const añosParaCalculo = mesesAntiguedad / 12;
             const añosDisplay = Math.floor(mesesAntiguedad / 12);
             const mesesDisplay = mesesAntiguedad % 12;
+
+            // EL PODER DE NEGOCIACIÓN: Cuánto vale 1 día de aumento en la negociación
+            const valorDeUnDiaEnNegociacion = añosParaCalculo * salarioDiario;
 
             // INDEMNIZACIÓN ERE
             let indemnizacion = añosParaCalculo * diasPorAno * salarioDiario;
@@ -670,7 +719,7 @@
             if (!prorrateado) {
                 const inicioAno = new Date(fechaDespido.getFullYear(), 0, 1);
                 const diasEnAno = Math.floor((fechaDespido - inicioAno) / (1000 * 60 * 60 * 24)) + 1;
-                const pagasExtraAnuales = salarioFijoMensual * 2; // Las extras normalmente no llevan comisión
+                const pagasExtraAnuales = salarioFijoMensual * 2; 
                 pagoPagasExtra = pagasExtraAnuales * (diasEnAno / 365);
                 rowPagasExtra.style.display = 'flex';
             } else {
@@ -682,6 +731,10 @@
 
             // ACTUALIZAR INTERFAZ
             const formatoMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+
+            // Mostrar métricas de negociación
+            resSalarioDiario.textContent = formatoMoneda.format(salarioDiario);
+            resValorPorAno.textContent = formatoMoneda.format(valorDeUnDiaEnNegociacion);
 
             resSalarioAnual.textContent = formatoMoneda.format(salarioAnual);
             resAntiguedad.textContent = `${añosDisplay} años y ${mesesDisplay} meses`;
