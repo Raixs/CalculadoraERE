@@ -92,25 +92,41 @@
                             <i class="fa-solid fa-check mr-1"></i> Extraídos automáticamente
                         </span>
                     </div>
-                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Salario Bruto Mensual (Total Devengado)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">€</span>
+                    <div class="p-6 space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Salario Fijo Mensual</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">€</span>
+                                    </div>
+                                    <input type="number" id="input-salario" class="pl-8 block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2000">
                                 </div>
-                                <input type="number" id="input-salario" class="pl-8 block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2000">
+                                <p class="text-xs text-gray-500 mt-1">Sueldo base + complementos fijos.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio (Antigüedad)</label>
+                                <input type="date" id="input-fecha" class="block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2020-01-01">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio (Antigüedad)</label>
-                            <input type="date" id="input-fecha" class="block w-full border-gray-300 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5" value="2020-01-01">
+
+                        <!-- NUEVO: Campo de comisiones -->
+                        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                            <label class="block text-sm font-medium text-blue-900 mb-1">Promedio de Comisiones / Bonus (últimos 12 meses)</label>
+                            <div class="relative mt-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-blue-500 sm:text-sm">€ / mes</span>
+                                </div>
+                                <input type="number" id="input-comisiones" class="pl-16 block w-full border-blue-200 rounded-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2.5 bg-white" value="0">
+                            </div>
+                            <p class="text-xs text-blue-700 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> <b>Importante:</b> La ley exige calcular el despido basándose en la media mensual de tus variables del último año, no en lo cobrado este mes.</p>
                         </div>
-                        <div class="sm:col-span-2 flex items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+
+                        <div class="flex items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
                             <input id="input-prorrateo" type="checkbox" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                             <label for="input-prorrateo" class="ml-3 block text-sm text-gray-800">
                                 <span class="font-medium">Pagas extra prorrateadas</span><br>
-                                <span class="text-gray-500 text-xs">Desmarca esta casilla si cobras 14 pagas al año.</span>
+                                <span class="text-gray-500 text-xs">Desmarca esta casilla si cobras 14 pagas al año (Navidad, Verano).</span>
                             </label>
                         </div>
                     </div>
@@ -198,7 +214,7 @@
                         <h2 class="text-xl font-bold mb-6">Resumen a percibir</h2>
                         <div class="space-y-4">
                             <div class="flex justify-between items-center pb-4 border-b border-gray-700">
-                                <div><p class="text-sm text-gray-400">Salario Bruto Anual</p></div>
+                                <div><p class="text-sm text-gray-400">Salario Bruto Anual Computable</p></div>
                                 <span id="res-salario-anual" class="text-lg font-semibold">0,00 €</span>
                             </div>
                             <div class="flex justify-between items-center pb-4 border-b border-gray-700">
@@ -242,7 +258,7 @@
         </div>
     </main>
 
-    <!-- MODAL CONTRASEÑA ZIP (NUEVO) -->
+    <!-- MODAL CONTRASEÑA ZIP -->
     <div id="password-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"></div>
@@ -316,6 +332,7 @@
 
         // Inputs Calculadora
         const inputSalario = document.getElementById('input-salario');
+        const inputComisiones = document.getElementById('input-comisiones'); // NUEVO
         const inputFecha = document.getElementById('input-fecha');
         const inputFechaDespido = document.getElementById('input-fecha-despido');
         const inputProrrateo = document.getElementById('input-prorrateo');
@@ -349,7 +366,6 @@
         let currentZipFile = null;
 
         function openFilePicker() {
-            // Permite volver a seleccionar el mismo archivo y disparar siempre "change".
             fileInput.value = "";
             fileInput.click();
         }
@@ -389,7 +405,7 @@
             calcularLiquidacion();
         });
 
-        const inputsCalculo = [inputSalario, inputFecha, inputFechaDespido, inputProrrateo, sliderDias, sliderTopes, inputVacaciones, inputPreaviso];
+        const inputsCalculo = [inputSalario, inputComisiones, inputFecha, inputFechaDespido, inputProrrateo, sliderDias, sliderTopes, inputVacaciones, inputPreaviso];
         inputsCalculo.forEach(input => {
             input.addEventListener('input', () => {
                 if(input === sliderDias) valDias.textContent = `${sliderDias.value} días`;
@@ -402,12 +418,10 @@
         });
 
         // --- MANEJO DE ARCHIVOS (PDF Y ZIP) ---
-
         async function handleFiles(files) {
             if (files.length === 0) return;
             const file = files[0];
             
-            // Si es un archivo ZIP
             if (file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
                 currentZipFile = file;
                 passwordError.classList.add('hidden');
@@ -417,7 +431,6 @@
                 return;
             }
             
-            // Si es un archivo PDF
             if (file.type === 'application/pdf') {
                 iniciarProcesamiento(file, "Leyendo documento PDF...");
                 try {
@@ -428,12 +441,10 @@
                 }
                 return;
             }
-
             alert("Sube un PDF o un archivo ZIP.");
         }
 
         // --- LÓGICA DE CONTRASEÑA ZIP ---
-
         function cancelZipPassword() {
             passwordModal.classList.add('hidden');
             currentZipFile = null;
@@ -451,11 +462,9 @@
             passwordError.classList.add('hidden');
             
             try {
-                // Crear lector de ZIP de memoria (cliente)
                 const zipReader = new zip.ZipReader(new zip.BlobReader(currentZipFile), { password: password });
                 const entries = await zipReader.getEntries();
                 
-                // Buscar el PDF dentro del zip
                 const pdfEntry = entries.find(entry => entry.filename.toLowerCase().endsWith('.pdf'));
                 
                 if (!pdfEntry) {
@@ -464,20 +473,16 @@
                     return;
                 }
 
-                // Extraer a memoria RAM (ArrayBuffer)
                 const pdfData = await pdfEntry.getData(new zip.Uint8ArrayWriter());
                 await zipReader.close();
 
-                // Si llegamos aquí, la contraseña funcionó.
                 passwordModal.classList.add('hidden');
                 iniciarProcesamiento(currentZipFile, "Descomprimido con éxito. Leyendo PDF interno...");
                 
-                // Pasar el arrayBuffer desencriptado al procesador PDF normal
                 await procesarPDFLocal(pdfData.buffer);
 
             } catch (error) {
                 console.error("Error ZIP:", error);
-                // Si falla, suele ser por Invalid Password
                 passwordError.classList.remove('hidden');
                 zipPasswordInput.value = '';
                 zipPasswordInput.focus();
@@ -490,8 +495,7 @@
             sectionLoading.classList.remove('hidden');
         }
 
-        // --- EXTRACCIÓN DE DATOS DEL PDF (HEURÍSTICAS) ---
-
+        // --- EXTRACCIÓN DE DATOS DEL PDF (HEURÍSTICAS ACTUALIZADAS PARA COMISIONES) ---
         async function procesarPDFLocal(arrayBuffer) {
             try {
                 const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
@@ -509,7 +513,8 @@
                 let extraido = {
                     salario_bruto_mensual: 2000,
                     fecha_antiguedad: "2020-01-01",
-                    pagas_extra_prorrateadas: false
+                    pagas_extra_prorrateadas: false,
+                    comisiones_detectadas: 0
                 };
 
                 // Antigüedad
@@ -530,6 +535,14 @@
                     extraido.pagas_extra_prorrateadas = true;
                 }
 
+                // COMISIONES (NUEVA LÓGICA)
+                // Busca palabras como COMISION, COMISIONES, INCENTIVO, INCENTIVOS, BONUS
+                const comisionRegex = /(?:COMISI[OÓ]N(?:ES)?|INCENTIVO(?:S)?|BONUS)[^\d]{1,15}(\d{1,3}(?:\.\d{3})*,\d{2})/i;
+                const comisionMatch = normalizedText.match(comisionRegex);
+                if (comisionMatch) {
+                    extraido.comisiones_detectadas = parseFloat(comisionMatch[1].replace(/\./g, '').replace(',', '.'));
+                }
+
                 // Salario Bruto Devengado
                 const allAmountsMatches = [...normalizedText.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)];
                 const amounts = allAmountsMatches.map(m => parseFloat(m[1].replace(/\./g, '').replace(',', '.')));
@@ -544,7 +557,13 @@
                     }
                 }
 
-                inputSalario.value = extraido.salario_bruto_mensual;
+                // Ajuste inteligente: Si detectó comisiones, las resta del total devengado para obtener el Salario Fijo Real.
+                if (extraido.comisiones_detectadas > 0 && extraido.salario_bruto_mensual > extraido.comisiones_detectadas) {
+                    extraido.salario_bruto_mensual -= extraido.comisiones_detectadas;
+                }
+
+                inputSalario.value = extraido.salario_bruto_mensual.toFixed(2);
+                inputComisiones.value = extraido.comisiones_detectadas.toFixed(2);
                 inputFecha.value = extraido.fecha_antiguedad;
                 inputProrrateo.checked = extraido.pagas_extra_prorrateadas;
 
@@ -583,13 +602,15 @@
             inputVacaciones.value = 0;
             selectPreaviso.value = "0";
             inputPreaviso.value = 0;
+            inputComisiones.value = 0;
             divPreavisoCustom.classList.add('hidden');
             inputFechaDespido.valueAsDate = new Date();
         }
 
-        // --- LÓGICA MATEMÁTICA ---
+        // --- LÓGICA MATEMÁTICA CON VARIABLES (COMISIONES) ---
         function calcularLiquidacion() {
-            const salarioMensual = parseFloat(inputSalario.value) || 0;
+            const salarioFijoMensual = parseFloat(inputSalario.value) || 0;
+            const comisionesMensuales = parseFloat(inputComisiones.value) || 0; // Media últimos 12 meses
             const fechaAntiguedad = new Date(inputFecha.value);
             const fechaDespido = new Date(inputFechaDespido.value) || new Date();
             const prorrateado = inputProrrateo.checked;
@@ -599,17 +620,26 @@
             
             let diasPreaviso = selectPreaviso.value === 'custom' ? (parseInt(inputPreaviso.value) || 0) : (parseInt(selectPreaviso.value) || 0);
 
+            // CALCULAR SALARIO ANUAL
+            // Fijo: Mensual x 12 o 14 pagas
             const multiplicadorPagas = prorrateado ? 12 : 14;
-            const salarioAnual = salarioMensual * multiplicadorPagas;
+            const salarioFijoAnual = salarioFijoMensual * multiplicadorPagas;
+            
+            // Variable: Media mensual x 12 meses (Las variables anuales son 12 meses)
+            const salarioVariableAnual = comisionesMensuales * 12; 
+
+            // Sumamos ambos para el Salario Anual Computable
+            const salarioAnual = salarioFijoAnual + salarioVariableAnual;
             const salarioDiario = salarioAnual / 365;
 
+            // CÁLCULO DE ANTIGÜEDAD
             let mesesAntiguedad = 0;
             if (fechaAntiguedad < fechaDespido) {
                 const diffAños = fechaDespido.getFullYear() - fechaAntiguedad.getFullYear();
                 const diffMeses = fechaDespido.getMonth() - fechaAntiguedad.getMonth();
                 const diffDias = fechaDespido.getDate() - fechaAntiguedad.getDate();
                 mesesAntiguedad = (diffAños * 12) + diffMeses;
-                if (diffDias > 0) mesesAntiguedad += 1;
+                if (diffDias > 0) mesesAntiguedad += 1; // Un solo día ya cuenta como mes entero
             }
             if (mesesAntiguedad < 0) mesesAntiguedad = 0;
             
@@ -617,8 +647,10 @@
             const añosDisplay = Math.floor(mesesAntiguedad / 12);
             const mesesDisplay = mesesAntiguedad % 12;
 
+            // INDEMNIZACIÓN ERE
             let indemnizacion = añosParaCalculo * diasPorAno * salarioDiario;
             
+            // TOPES
             const mensualidadTope = salarioAnual / 12;
             const topeMaximoDinero = topeMeses * mensualidadTope;
 
@@ -630,6 +662,7 @@
                 haTopado = true;
             }
 
+            // FINIQUITO ORDINARIO
             const pagoVacaciones = diasVacaciones * salarioDiario;
             const pagoPreaviso = diasPreaviso * salarioDiario;
             
@@ -637,7 +670,7 @@
             if (!prorrateado) {
                 const inicioAno = new Date(fechaDespido.getFullYear(), 0, 1);
                 const diasEnAno = Math.floor((fechaDespido - inicioAno) / (1000 * 60 * 60 * 24)) + 1;
-                const pagasExtraAnuales = salarioMensual * 2;
+                const pagasExtraAnuales = salarioFijoMensual * 2; // Las extras normalmente no llevan comisión
                 pagoPagasExtra = pagasExtraAnuales * (diasEnAno / 365);
                 rowPagasExtra.style.display = 'flex';
             } else {
@@ -647,6 +680,7 @@
             const totalFiniquito = pagoVacaciones + pagoPreaviso + pagoPagasExtra;
             const totalPercibir = indemnizacionFinal + totalFiniquito;
 
+            // ACTUALIZAR INTERFAZ
             const formatoMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
             resSalarioAnual.textContent = formatoMoneda.format(salarioAnual);
