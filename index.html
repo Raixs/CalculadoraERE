@@ -44,10 +44,10 @@
         
         <div class="text-center mb-10">
             <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                Calcula tu indemnización y finiquito
+                Calcula tu indemnización, finiquito y paro
             </h1>
             <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                Sube tu nómina. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b> (gestorías). Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
+                Sube tu nómina. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b>. Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
             </p>
         </div>
 
@@ -171,7 +171,7 @@
                                 </div>
                             </div>
                             
-                            <!-- NUEVO: IRPF - Acepta comas y decimales sin romper la validación -->
+                            <!-- IRPF -->
                             <div class="sm:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Retención de IRPF para tu finiquito</label>
                                 <p class="text-xs text-gray-500 mb-3">La indemnización no tributa, pero el finiquito sí. Calcularemos tu "Neto" en base a este porcentaje.</p>
@@ -264,14 +264,71 @@
                         
                     </div>
                 </div>
+
+                <!-- 4. Tarjeta del Paro (NUEVA) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-cyan-50 px-6 py-4 border-b border-cyan-100">
+                        <h2 class="text-lg font-semibold text-cyan-900 flex items-center">
+                            <span class="bg-cyan-500 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">4</span> Prestación por Desempleo (Paro)
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-5">
+                        <p class="text-sm text-gray-500 mb-4">Para estimar cuánto tiempo y cuánto dinero cobrarás de paro (SEPE), necesitamos estos tres datos personales.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Select Tiempo Cotizado -->
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tiempo cotizado en los últimos 6 años</label>
+                                <select id="select-tiempo-cotizado" class="block w-full border-gray-300 rounded-md border focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm p-2.5">
+                                    <option value="0">Menos de 1 año (No tienes derecho a paro)</option>
+                                    <option value="4">De 1 año a 1 año y medio (4 meses de paro)</option>
+                                    <option value="6">De 1 año y medio a 2 años (6 meses de paro)</option>
+                                    <option value="8">De 2 años a 2 años y medio (8 meses de paro)</option>
+                                    <option value="10">De 2 años y medio a 3 años (10 meses de paro)</option>
+                                    <option value="12">De 3 años a 3 años y medio (12 meses de paro)</option>
+                                    <option value="14">De 3 años y medio a 4 años (14 meses de paro)</option>
+                                    <option value="16">De 4 años a 4 años y medio (16 meses de paro)</option>
+                                    <option value="18">De 4 años y medio a 5 años (18 meses de paro)</option>
+                                    <option value="20">De 5 años a 5 años y medio (20 meses de paro)</option>
+                                    <option value="22">De 5 años y medio a 6 años (22 meses de paro)</option>
+                                    <option value="24" selected>Más de 6 años (24 meses, el máximo)</option>
+                                </select>
+                            </div>
+
+                            <!-- Select Hijos -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hijos a cargo (menores 26 años)</label>
+                                <select id="select-hijos" class="block w-full border-gray-300 rounded-md border focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm p-2.5">
+                                    <option value="0" selected>Sin hijos</option>
+                                    <option value="1">1 hijo</option>
+                                    <option value="2">2 o más hijos</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Afecta al tope máximo que puedes cobrar.</p>
+                            </div>
+
+                            <!-- Input Base de Cotización -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Base de Cotización (Últimos 6 meses)</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="input-base-cotizacion" class="block w-full border-gray-300 rounded-md border focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm p-2.5 bg-cyan-50/50" value="0">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">€</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-wand-magic-sparkles text-cyan-500 mr-1"></i> Calculada automáticamente de tu nómina.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Columna Derecha: Resultados -->
             <div class="lg:col-span-5 space-y-6">
-                <!-- Desglose -->
+                <!-- Desglose ERE -->
                 <div class="bg-gray-900 rounded-2xl shadow-lg border border-gray-800 overflow-hidden text-white sticky top-6">
                     <div class="p-6">
-                        <h2 class="text-xl font-bold mb-6">Resumen a percibir</h2>
+                        <h2 class="text-xl font-bold mb-6">Resumen de Liquidación</h2>
                         <div class="space-y-4">
                             <div class="flex justify-between items-center pb-4 border-b border-gray-700">
                                 <div><p class="text-sm text-gray-400">Salario Bruto Anual Computable</p></div>
@@ -303,7 +360,7 @@
                     </div>
                     
                     <div class="bg-gray-800 p-6">
-                        <!-- NUEVO BLOQUE DE NETO (Mejorado UX) -->
+                        <!-- BLOQUE DE NETO (Mejorado UX) -->
                         <div class="mb-4 border-b border-gray-700 pb-4 space-y-3">
                             <div class="flex justify-between items-center">
                                 <p class="text-sm text-gray-400 font-medium">Total Bruto Estimado</p>
@@ -317,7 +374,7 @@
                             <!-- Alerta visual si el finiquito es 0 -->
                             <div id="msg-irpf-cero" class="hidden bg-gray-700/50 p-3 rounded-lg border border-gray-600 mt-2">
                                 <p class="text-xs text-gray-300 leading-relaxed">
-                                    <i class="fa-solid fa-circle-check text-green-400 mr-1"></i> Tu finiquito ordinario es <b>0,00 €</b> en esta simulación. Como la indemnización ERE está exenta por ley, <b>no se te retiene nada de IRPF</b>.
+                                    <i class="fa-solid fa-circle-check text-green-400 mr-1"></i> Tu finiquito ordinario es <b>0,00 €</b>. Como la indemnización ERE está exenta por ley, <b>no se te retiene nada de IRPF</b>.
                                 </p>
                             </div>
                         </div>
@@ -326,9 +383,34 @@
                         <div class="flex justify-between items-end">
                             <span id="res-total-neto" class="text-4xl font-extrabold text-emerald-400">0,00 €</span>
                         </div>
-                        <p class="text-xs text-gray-400 mt-3 opacity-90 leading-relaxed">
-                            * Tu indemnización por despido de <span id="txt-indemnizacion-exenta" class="font-semibold text-gray-200">0,00 €</span> está completamente libre de impuestos.
-                        </p>
+                    </div>
+
+                    <!-- NUEVO BLOQUE DE PARO EN RESULTADOS -->
+                    <div class="bg-cyan-900 border-t-2 border-cyan-700 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="text-sm text-cyan-200 font-bold uppercase tracking-wider"><i class="fa-solid fa-umbrella text-cyan-400 mr-2"></i> Prestación SEPE (Paro)</p>
+                            <span id="res-paro-meses" class="bg-cyan-800 text-cyan-100 text-xs px-3 py-1 rounded-full border border-cyan-600 font-bold">24 meses</span>
+                        </div>
+
+                        <div id="div-paro-results" class="space-y-3">
+                            <div class="bg-cyan-950/50 rounded-lg p-3 border border-cyan-800">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-cyan-100">Primeros 6 meses</span>
+                                    <span id="res-paro-6-meses" class="text-lg font-bold text-white">0,00 € <span class="text-xs text-cyan-400 font-normal">/mes</span></span>
+                                </div>
+                            </div>
+                            <div class="bg-cyan-950/50 rounded-lg p-3 border border-cyan-800">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-cyan-100">Del mes 7 en adelante</span>
+                                    <span id="res-paro-resto" class="text-lg font-bold text-white">0,00 € <span class="text-xs text-cyan-400 font-normal">/mes</span></span>
+                                </div>
+                            </div>
+                            <p id="msg-paro-tope" class="text-xs text-cyan-300 mt-2 italic hidden"><i class="fa-solid fa-circle-info mr-1"></i> Esta cantidad está limitada por el tope máximo legal según tus hijos a cargo.</p>
+                        </div>
+                        <div id="div-sin-paro" class="hidden">
+                            <p class="text-sm text-red-300 bg-red-900/30 p-3 rounded-lg border border-red-800/50"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Al no tener 360 días cotizados, no tienes derecho a prestación contributiva. Consulta los subsidios del SEPE.</p>
+                        </div>
+                        <p class="text-[10px] text-cyan-500 mt-4 leading-tight">* Cifras brutas aproximadas. El SEPE retendrá un mínimo de IRPF (2%) y una pequeña cuota de Seguridad Social.</p>
                     </div>
                 </div>
 
@@ -426,6 +508,11 @@
         const divPreavisoCustom = document.getElementById('div-preaviso-custom');
         const inputPreaviso = document.getElementById('input-preaviso');
 
+        // Inputs PARO (NUEVOS)
+        const selectTiempoCotizado = document.getElementById('select-tiempo-cotizado');
+        const selectHijos = document.getElementById('select-hijos');
+        const inputBaseCotizacion = document.getElementById('input-base-cotizacion');
+
         const valDias = document.getElementById('val-dias');
         const valTopes = document.getElementById('val-topes');
         const txtTopeMeses = document.getElementById('txt-tope-meses');
@@ -433,7 +520,6 @@
         // Elementos UI de Neto e IRPF
         const txtIrpfAplicado = document.getElementById('txt-irpf-aplicado'); 
         const msgIrpfCero = document.getElementById('msg-irpf-cero');
-        const txtIndemnizacionExenta = document.getElementById('txt-indemnizacion-exenta');
 
         // Nuevos Outputs de Poder de Negociación
         const resSalarioDiario = document.getElementById('res-salario-diario');
@@ -454,6 +540,14 @@
         // Outputs NETO
         const resRetencionIrpf = document.getElementById('res-retencion-irpf');
         const resTotalNeto = document.getElementById('res-total-neto');
+
+        // Outputs PARO
+        const resParoMeses = document.getElementById('res-paro-meses');
+        const resParo6Meses = document.getElementById('res-paro-6-meses');
+        const resParoResto = document.getElementById('res-paro-resto');
+        const msgParoTope = document.getElementById('msg-paro-tope');
+        const divParoResults = document.getElementById('div-paro-results');
+        const divSinParo = document.getElementById('div-sin-paro');
 
         inputFechaDespido.valueAsDate = new Date();
 
@@ -500,7 +594,8 @@
             calcularLiquidacion();
         });
 
-        const inputsCalculo = [inputSalario, inputComisiones, inputFecha, inputFechaDespido, inputProrrateo, sliderDias, sliderTopes, inputVacaciones, inputPreaviso, inputIrpf];
+        // Añadimos inputs del Paro a los triggers de cálculo
+        const inputsCalculo = [inputSalario, inputComisiones, inputFecha, inputFechaDespido, inputProrrateo, sliderDias, sliderTopes, inputVacaciones, inputPreaviso, inputIrpf, selectTiempoCotizado, selectHijos, inputBaseCotizacion];
         inputsCalculo.forEach(input => {
             input.addEventListener('input', () => {
                 if(input === sliderDias) valDias.textContent = `${sliderDias.value} días`;
@@ -610,13 +705,12 @@
                     fecha_antiguedad: "2020-01-01",
                     pagas_extra_prorrateadas: false,
                     comisiones_detectadas: 0,
-                    irpf_detectado: 15 // Default
+                    irpf_detectado: 15
                 };
 
                 // Antigüedad
                 const antiRegex = /(?:ANTIGUEDA\s*D|ANTIG[UÜ]EDAD|FECHA ALTA)[\s\S]{1,100}?(\d{1,2})\s+(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)\s+(\d{2,4})/i;
                 const antiMatch = normalizedText.match(antiRegex);
-                
                 if (antiMatch) {
                     const day = antiMatch[1].padStart(2, '0');
                     const monthNames = { 'ENE': '01', 'FEB': '02', 'MAR': '03', 'ABR': '04', 'MAY': '05', 'JUN': '06', 'JUL': '07', 'AGO': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DIC': '12' };
@@ -638,7 +732,7 @@
                     extraido.comisiones_detectadas = parseFloat(comisionMatch[1].replace(/\./g, '').replace(',', '.'));
                 }
 
-                // IRPF (Heurística)
+                // IRPF
                 const irpfRegex = /I\.R\.P\.F\.[^\d]{0,5}(\d{1,2}(?:,\d{1,2})?)/i;
                 const irpfMatch = normalizedText.match(irpfRegex);
                 if (irpfMatch) {
@@ -663,12 +757,23 @@
                     extraido.salario_bruto_mensual -= extraido.comisiones_detectadas;
                 }
 
-                // Aplicar a los inputs
+                // Aplicar a los inputs principales
                 inputSalario.value = extraido.salario_bruto_mensual.toFixed(2);
                 inputComisiones.value = extraido.comisiones_detectadas.toFixed(2);
                 inputFecha.value = extraido.fecha_antiguedad;
                 inputProrrateo.checked = extraido.pagas_extra_prorrateadas;
                 inputIrpf.value = extraido.irpf_detectado;
+
+                // PRE-CALCULAR LA BASE DE COTIZACIÓN DEL PARO
+                // El SEPE usa el total devengado anual dividido por 12.
+                const salarioTotalMensualizado = extraido.salario_bruto_mensual + extraido.comisiones_detectadas;
+                const baseSSEE_estimada = extraido.pagas_extra_prorrateadas 
+                    ? salarioTotalMensualizado 
+                    : salarioTotalMensualizado + (extraido.salario_bruto_mensual * 2 / 12);
+                
+                // El máximo legal de cotización a la SS en España es ~4720.50 (2024/2025)
+                const baseFinal = Math.min(baseSSEE_estimada, 4720.50);
+                inputBaseCotizacion.value = baseFinal.toFixed(2);
 
                 setTimeout(() => {
                     sectionLoading.classList.add('hidden');
@@ -709,16 +814,21 @@
             inputIrpf.value = 15;
             divPreavisoCustom.classList.add('hidden');
             inputFechaDespido.valueAsDate = new Date();
+            
+            // Reset Paro
+            selectTiempoCotizado.value = "24";
+            selectHijos.value = "0";
+            inputBaseCotizacion.value = 0;
         }
 
-        // --- LÓGICA MATEMÁTICA PRINCIPAL ---
+        // --- LÓGICA MATEMÁTICA PRINCIPAL Y PARO (SEPE) ---
         function calcularLiquidacion() {
-            // Conversión robusta de cadenas para navegadores que puedan devolver formato europeo con coma
+            // Conversión robusta
             const irpfStr = inputIrpf.value || "0";
             const porcentajeIrpf = parseFloat(irpfStr.toString().replace(',', '.')) || 0;
-            
             const salarioFijoMensual = parseFloat(inputSalario.value.toString().replace(',', '.')) || 0;
             const comisionesMensuales = parseFloat(inputComisiones.value.toString().replace(',', '.')) || 0; 
+            const baseCotizacionParo = parseFloat(inputBaseCotizacion.value.toString().replace(',', '.')) || 0; 
             
             const fechaAntiguedad = new Date(inputFecha.value);
             const fechaDespido = new Date(inputFechaDespido.value) || new Date();
@@ -729,7 +839,7 @@
             
             let diasPreaviso = selectPreaviso.value === 'custom' ? (parseInt(inputPreaviso.value) || 0) : (parseInt(selectPreaviso.value) || 0);
 
-            // CALCULAR SALARIO ANUAL Y DIARIO
+            // --- 1. ERE Y FINIQUITO ---
             const multiplicadorPagas = prorrateado ? 12 : 14;
             const salarioFijoAnual = salarioFijoMensual * multiplicadorPagas;
             const salarioVariableAnual = comisionesMensuales * 12; 
@@ -737,7 +847,6 @@
             const salarioAnual = salarioFijoAnual + salarioVariableAnual;
             const salarioDiario = salarioAnual / 365;
 
-            // CÁLCULO DE ANTIGÜEDAD
             let mesesAntiguedad = 0;
             if (fechaAntiguedad < fechaDespido) {
                 const diffAños = fechaDespido.getFullYear() - fechaAntiguedad.getFullYear();
@@ -752,13 +861,9 @@
             const añosDisplay = Math.floor(mesesAntiguedad / 12);
             const mesesDisplay = mesesAntiguedad % 12;
 
-            // EL PODER DE NEGOCIACIÓN: Cuánto vale 1 día de aumento en la negociación
             const valorDeUnDiaEnNegociacion = añosParaCalculo * salarioDiario;
 
-            // INDEMNIZACIÓN ERE
             let indemnizacion = añosParaCalculo * diasPorAno * salarioDiario;
-            
-            // TOPES
             const mensualidadTope = salarioAnual / 12;
             const topeMaximoDinero = topeMeses * mensualidadTope;
 
@@ -770,7 +875,6 @@
                 haTopado = true;
             }
 
-            // FINIQUITO ORDINARIO
             const pagoVacaciones = diasVacaciones * salarioDiario;
             const pagoPreaviso = diasPreaviso * salarioDiario;
             
@@ -787,18 +891,75 @@
             
             const totalFiniquito = pagoVacaciones + pagoPreaviso + pagoPagasExtra;
             const totalBrutoPercibir = indemnizacionFinal + totalFiniquito;
-
-            // CÁLCULO DE NETO Y RETENCIONES
             const retencionIrpf = totalFiniquito * (porcentajeIrpf / 100);
             const totalNetoPercibir = totalBrutoPercibir - retencionIrpf;
 
-            // ACTUALIZAR INTERFAZ
-            const formatoMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+            // --- 2. CÁLCULO DEL PARO (SEPE) ---
+            const mesesParo = parseInt(selectTiempoCotizado.value);
+            const numHijos = parseInt(selectHijos.value);
 
-            // Mostrar métricas de negociación
+            if (mesesParo === 0) {
+                divSinParo.classList.remove('hidden');
+                divParoResults.classList.add('hidden');
+                resParoMeses.textContent = "Sin derecho";
+                resParoMeses.classList.replace('bg-cyan-800', 'bg-red-800');
+                resParoMeses.classList.replace('border-cyan-600', 'border-red-600');
+            } else {
+                divSinParo.classList.add('hidden');
+                divParoResults.classList.remove('hidden');
+                resParoMeses.textContent = mesesParo + " meses";
+                resParoMeses.classList.replace('bg-red-800', 'bg-cyan-800');
+                resParoMeses.classList.replace('border-red-600', 'border-cyan-600');
+
+                // Los cálculos del SEPE: 70% los primeros 6 meses, 60% a partir del 7º mes.
+                let paroTramo1 = baseCotizacionParo * 0.70;
+                let paroTramo2 = baseCotizacionParo * 0.60;
+
+                // Topes Máximos y Mínimos SEPE (Valores IPREM referenciales actualizados 2024/2025)
+                const topeMinimoSinHijos = 560; // Aprox 80% IPREM + 1/6
+                const topeMinimoConHijos = 750; // Aprox 107% IPREM + 1/6
+                const topeMaximoSinHijos = 1225; // Aprox 175% IPREM + 1/6
+                const topeMaximo1Hijo = 1400; // Aprox 200% IPREM + 1/6
+                const topeMaximo2Hijos = 1575; // Aprox 225% IPREM + 1/6
+
+                let topeMax, topeMin;
+                if (numHijos === 0) {
+                    topeMin = topeMinimoSinHijos;
+                    topeMax = topeMaximoSinHijos;
+                } else if (numHijos === 1) {
+                    topeMin = topeMinimoConHijos;
+                    topeMax = topeMaximo1Hijo;
+                } else {
+                    topeMin = topeMinimoConHijos;
+                    topeMax = topeMaximo2Hijos;
+                }
+
+                let topadoTramo1 = false;
+                let topadoTramo2 = false;
+
+                // Aplicar Topes Tramo 1 (Primeros 6 meses)
+                if (paroTramo1 > topeMax) { paroTramo1 = topeMax; topadoTramo1 = true; }
+                if (paroTramo1 < topeMin) { paroTramo1 = topeMin; }
+
+                // Aplicar Topes Tramo 2 (Mes 7 en adelante)
+                if (paroTramo2 > topeMax) { paroTramo2 = topeMax; topadoTramo2 = true; }
+                if (paroTramo2 < topeMin) { paroTramo2 = topeMin; }
+
+                const formatoMonedaSEPE = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+                resParo6Meses.innerHTML = `${formatoMonedaSEPE.format(paroTramo1)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+                resParoResto.innerHTML = `${formatoMonedaSEPE.format(paroTramo2)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+
+                if (topadoTramo1 || topadoTramo2) {
+                    msgParoTope.classList.remove('hidden');
+                } else {
+                    msgParoTope.classList.add('hidden');
+                }
+            }
+
+            // --- ACTUALIZAR INTERFAZ ERE ---
+            const formatoMoneda = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
             resSalarioDiario.textContent = formatoMoneda.format(salarioDiario);
             resValorPorAno.textContent = formatoMoneda.format(valorDeUnDiaEnNegociacion);
-
             resSalarioAnual.textContent = formatoMoneda.format(salarioAnual);
             resAntiguedad.textContent = `${añosDisplay} años y ${mesesDisplay} meses`;
             resIndemnizacion.textContent = formatoMoneda.format(indemnizacionFinal);
@@ -807,15 +968,10 @@
             resVacaciones.textContent = formatoMoneda.format(pagoVacaciones);
             resPreaviso.textContent = formatoMoneda.format(pagoPreaviso);
             resPagasExtra.textContent = formatoMoneda.format(pagoPagasExtra);
-            
-            // Sección Neto
             resTotal.textContent = formatoMoneda.format(totalBrutoPercibir);
             resRetencionIrpf.textContent = "- " + formatoMoneda.format(retencionIrpf);
             resTotalNeto.textContent = formatoMoneda.format(totalNetoPercibir);
-            
-            // Textos explicativos IRPF y alertas
             txtIrpfAplicado.textContent = porcentajeIrpf.toLocaleString('es-ES', { maximumFractionDigits: 2 });
-            txtIndemnizacionExenta.textContent = formatoMoneda.format(indemnizacionFinal);
             
             if (totalFiniquito === 0) {
                 msgIrpfCero.classList.remove('hidden');
