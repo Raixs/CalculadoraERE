@@ -433,7 +433,7 @@
     </main>
 
     <!-- MODAL CONTRASEÑA ZIP -->
-    <div id="password-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="password-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="password-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -443,7 +443,7 @@
                         <i class="fa-solid fa-lock text-yellow-600 text-xl"></i>
                     </div>
                     <div class="mt-3 text-center sm:mt-5">
-                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Nómina Protegida con Contraseña</h3>
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="password-modal-title">Nómina Protegida con Contraseña</h3>
                         <div class="mt-2">
                             <p class="text-sm text-gray-500">Este archivo ZIP está bloqueado. Generalmente, la gestoría usa tu <b>DNI o NIE</b> (con letra mayúscula) como contraseña.</p>
                         </div>
@@ -466,7 +466,7 @@
     </div>
 
     <!-- Modal de error -->
-    <div id="error-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="error-modal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="error-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -476,14 +476,17 @@
                         <i class="fa-solid fa-triangle-exclamation text-red-600 text-xl"></i>
                     </div>
                     <div class="mt-3 text-center sm:mt-5">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Error al leer el Documento</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="error-modal-title">Error al leer el Documento</h3>
                         <div class="mt-2">
-                            <p class="text-sm text-gray-500">No hemos podido procesar la nómina automáticamente. Te abriremos la calculadora con datos manuales para que puedas usarla de todos modos.</p>
+                            <p id="error-modal-message" class="text-sm text-gray-500">No hemos podido procesar la nómina automáticamente. Te abriremos la calculadora con datos manuales para que puedas usarla de todos modos.</p>
                         </div>
                     </div>
                 </div>
-                <div class="mt-5 sm:mt-6">
-                    <button type="button" onclick="closeErrorAndProceed()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:text-sm">
+                <div class="mt-5 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" onclick="closeErrorAndRetry()" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm">
+                        Reintentar
+                    </button>
+                    <button id="error-modal-continue-btn" type="button" onclick="closeErrorAndProceed()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:text-sm">
                         Continuar Manualmente
                     </button>
                 </div>
@@ -503,6 +506,9 @@
         const zipPasswordInput = document.getElementById('zip-password-input');
         const passwordError = document.getElementById('password-error');
         const loadingText = document.getElementById('loading-text');
+        const errorModalTitle = document.getElementById('error-modal-title');
+        const errorModalMessage = document.getElementById('error-modal-message');
+        const errorModalContinueBtn = document.getElementById('error-modal-continue-btn');
 
         // Inputs Calculadora
         const inputSalario = document.getElementById('input-salario');
@@ -566,10 +572,107 @@
 
         // Variable global para almacenar el archivo zip pendiente
         let currentZipFile = null;
+        const MAX_FILE_SIZE_MB = 20;
+        const PASSWORD_ERROR_DEFAULT = "Contraseña incorrecta. Inténtalo de nuevo.";
 
         function openFilePicker() {
             fileInput.value = "";
             fileInput.click();
+        }
+
+        function isZipFile(file) {
+            const name = (file.name || '').toLowerCase();
+            const type = (file.type || '').toLowerCase();
+            return name.endsWith('.zip') || type === 'application/zip' || type === 'application/x-zip-compressed';
+        }
+
+        function isPdfFile(file) {
+            const name = (file.name || '').toLowerCase();
+            const type = (file.type || '').toLowerCase();
+            return name.endsWith('.pdf') || type === 'application/pdf' || type === 'application/x-pdf';
+        }
+
+        function normalizarMensajeError(error) {
+            if (!error) return '';
+            if (typeof error === 'string') return error.toLowerCase();
+            return `${error.name || ''} ${error.code || ''} ${error.message || ''}`.toLowerCase();
+        }
+
+        function mostrarError({ titulo, mensaje, permitirContinuarManual = true, volverASubida = true } = {}) {
+            sectionLoading.classList.add('hidden');
+            if (volverASubida) {
+                sectionUpload.classList.remove('hidden');
+            }
+
+            errorModalTitle.textContent = titulo || "No hemos podido procesar el archivo";
+            errorModalMessage.textContent = mensaje || "El archivo puede estar dañado o no ser compatible.";
+            errorModalContinueBtn.classList.toggle('hidden', !permitirContinuarManual);
+            errorModal.classList.remove('hidden');
+        }
+
+        function closeErrorAndRetry() {
+            errorModal.classList.add('hidden');
+            sectionLoading.classList.add('hidden');
+            sectionUpload.classList.remove('hidden');
+            passwordModal.classList.add('hidden');
+            currentZipFile = null;
+            fileInput.value = "";
+        }
+
+        function obtenerDetalleErrorPDF(error) {
+            const texto = normalizarMensajeError(error);
+
+            if (texto.includes('password') || texto.includes('encrypted')) {
+                return {
+                    titulo: "PDF protegido con contraseña",
+                    mensaje: "Este PDF está cifrado y no puede leerse directamente. Si lo recibiste en ZIP, súbelo como ZIP para desbloquearlo primero."
+                };
+            }
+
+            if (texto.includes('invalidpdf') || texto.includes('formaterror') || texto.includes('missingpdf') || texto.includes('xref') || texto.includes('corrupt')) {
+                return {
+                    titulo: "PDF no compatible o dañado",
+                    mensaje: "No hemos podido interpretar la estructura del PDF. Intenta exportarlo de nuevo o subir otra versión."
+                };
+            }
+
+            if (texto.includes('without_text_layer')) {
+                return {
+                    titulo: "PDF sin texto seleccionable",
+                    mensaje: "El documento parece escaneado como imagen. La extracción automática no es fiable en este caso; puedes continuar en modo manual."
+                };
+            }
+
+            return {
+                titulo: "Error procesando el PDF",
+                mensaje: "No hemos podido extraer los datos de la nómina automáticamente. Puedes continuar con introducción manual."
+            };
+        }
+
+        function obtenerDetalleErrorZIP(error) {
+            const texto = normalizarMensajeError(error);
+
+            if (texto.includes('password')) {
+                return {
+                    tipo: 'password',
+                    titulo: "Contraseña incorrecta",
+                    mensaje: PASSWORD_ERROR_DEFAULT
+                };
+            }
+
+            if (texto.includes('invalid') || texto.includes('central') || texto.includes('zip') || texto.includes('corrupt') || texto.includes('signature')) {
+                return {
+                    tipo: 'zip',
+                    titulo: "ZIP no válido o dañado",
+                    mensaje: "No hemos podido abrir el ZIP. Verifica que esté completo y vuelve a descargarlo o exportarlo."
+                };
+            }
+
+            return {
+                tipo: 'zip',
+                titulo: "No se pudo leer el ZIP",
+                mensaje: "Ha ocurrido un error al descomprimir el archivo. Puedes intentarlo de nuevo o continuar en modo manual."
+            };
         }
 
         // --- LÓGICA DE EVENTOS Drag & Drop ---
@@ -622,29 +725,58 @@
 
         // --- MANEJO DE ARCHIVOS (PDF Y ZIP) ---
         async function handleFiles(files) {
-            if (files.length === 0) return;
+            if (!files || files.length === 0) return;
             const file = files[0];
-            
-            if (file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+
+            if (!file || file.size === 0) {
+                mostrarError({
+                    titulo: "Archivo vacío",
+                    mensaje: "El archivo seleccionado está vacío. Vuelve a intentarlo con un PDF o ZIP válido.",
+                    permitirContinuarManual: true
+                });
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                mostrarError({
+                    titulo: "Archivo demasiado grande",
+                    mensaje: `El tamaño máximo soportado es ${MAX_FILE_SIZE_MB} MB. Intenta comprimirlo o usar otra versión más ligera.`,
+                    permitirContinuarManual: true
+                });
+                return;
+            }
+
+            if (isZipFile(file)) {
                 currentZipFile = file;
                 passwordError.classList.add('hidden');
+                passwordError.textContent = PASSWORD_ERROR_DEFAULT;
                 zipPasswordInput.value = '';
                 passwordModal.classList.remove('hidden');
                 zipPasswordInput.focus();
                 return;
             }
-            
-            if (file.type === 'application/pdf') {
+
+            if (isPdfFile(file)) {
                 iniciarProcesamiento(file, "Leyendo documento PDF...");
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     await procesarPDFLocal(arrayBuffer);
                 } catch (error) {
-                    mostrarError();
+                    const detalleError = obtenerDetalleErrorPDF(error);
+                    mostrarError({
+                        titulo: detalleError.titulo,
+                        mensaje: detalleError.mensaje,
+                        permitirContinuarManual: true
+                    });
                 }
                 return;
             }
-            alert("Sube un PDF o un archivo ZIP.");
+
+            mostrarError({
+                titulo: "Formato no soportado",
+                mensaje: "Solo se admiten archivos PDF o ZIP con PDF en su interior.",
+                permitirContinuarManual: true
+            });
         }
 
         // --- LÓGICA DE CONTRASEÑA ZIP ---
@@ -660,35 +792,109 @@
 
         async function submitZipPassword() {
             const password = zipPasswordInput.value.trim();
-            if (!password) return;
+            if (!currentZipFile) {
+                passwordModal.classList.add('hidden');
+                mostrarError({
+                    titulo: "No hay ZIP para procesar",
+                    mensaje: "Selecciona un archivo ZIP y vuelve a intentarlo.",
+                    permitirContinuarManual: true
+                });
+                return;
+            }
+
+            if (!password) {
+                passwordError.textContent = "Introduce la contraseña para continuar.";
+                passwordError.classList.remove('hidden');
+                zipPasswordInput.focus();
+                return;
+            }
 
             passwordError.classList.add('hidden');
+            passwordError.textContent = PASSWORD_ERROR_DEFAULT;
+            let zipReader = null;
+            let pdfExtraido = false;
             
             try {
-                const zipReader = new zip.ZipReader(new zip.BlobReader(currentZipFile), { password: password });
+                zipReader = new zip.ZipReader(new zip.BlobReader(currentZipFile), { password: password });
                 const entries = await zipReader.getEntries();
-                
-                const pdfEntry = entries.find(entry => entry.filename.toLowerCase().endsWith('.pdf'));
-                
-                if (!pdfEntry) {
-                    alert("El archivo ZIP se abrió, pero no contiene ningún PDF dentro.");
-                    cancelZipPassword();
-                    return;
-                }
+                if (!entries || entries.length === 0) throw new Error('zip_empty');
 
-                const pdfData = await pdfEntry.getData(new zip.Uint8ArrayWriter());
+                const pdfEntries = entries.filter(entry => !entry.directory && entry.filename.toLowerCase().endsWith('.pdf'));
+                if (pdfEntries.length === 0) throw new Error('zip_without_pdf');
+
+                const pdfData = await pdfEntries[0].getData(new zip.Uint8ArrayWriter());
+                if (!pdfData || pdfData.length === 0) throw new Error('pdf_empty_from_zip');
+                pdfExtraido = true;
+
                 await zipReader.close();
+                zipReader = null;
 
                 passwordModal.classList.add('hidden');
-                iniciarProcesamiento(currentZipFile, "Descomprimido con éxito. Leyendo PDF interno...");
+                const mensajeCarga = pdfEntries.length > 1
+                    ? `ZIP válido (${pdfEntries.length} PDFs). Leyendo el primer PDF...`
+                    : "Descomprimido con éxito. Leyendo PDF interno...";
+                iniciarProcesamiento(currentZipFile, mensajeCarga);
                 
                 await procesarPDFLocal(pdfData.buffer);
 
             } catch (error) {
                 console.error("Error ZIP:", error);
-                passwordError.classList.remove('hidden');
-                zipPasswordInput.value = '';
-                zipPasswordInput.focus();
+                const textoError = normalizarMensajeError(error);
+
+                if (pdfExtraido) {
+                    passwordModal.classList.add('hidden');
+                    const detalleErrorPdf = obtenerDetalleErrorPDF(error);
+                    mostrarError({
+                        titulo: detalleErrorPdf.titulo,
+                        mensaje: detalleErrorPdf.mensaje,
+                        permitirContinuarManual: true
+                    });
+                    return;
+                }
+
+                if (textoError.includes('zip_without_pdf')) {
+                    passwordModal.classList.add('hidden');
+                    mostrarError({
+                        titulo: "ZIP sin PDF",
+                        mensaje: "El ZIP se pudo abrir, pero no contiene ningún archivo PDF válido.",
+                        permitirContinuarManual: true
+                    });
+                } else if (textoError.includes('zip_empty')) {
+                    passwordModal.classList.add('hidden');
+                    mostrarError({
+                        titulo: "ZIP vacío",
+                        mensaje: "El archivo ZIP no contiene elementos o está incompleto.",
+                        permitirContinuarManual: true
+                    });
+                } else if (textoError.includes('pdf_empty_from_zip')) {
+                    passwordModal.classList.add('hidden');
+                    mostrarError({
+                        titulo: "PDF vacío dentro del ZIP",
+                        mensaje: "Se ha encontrado un PDF, pero no tiene contenido legible.",
+                        permitirContinuarManual: true
+                    });
+                } else {
+                    const detalleErrorZip = obtenerDetalleErrorZIP(error);
+                    if (detalleErrorZip.tipo === 'password') {
+                        passwordError.textContent = detalleErrorZip.mensaje;
+                        passwordError.classList.remove('hidden');
+                        zipPasswordInput.value = '';
+                        zipPasswordInput.focus();
+                    } else {
+                        passwordModal.classList.add('hidden');
+                        mostrarError({
+                            titulo: detalleErrorZip.titulo,
+                            mensaje: detalleErrorZip.mensaje,
+                            permitirContinuarManual: true
+                        });
+                    }
+                }
+            } finally {
+                if (zipReader) {
+                    try {
+                        await zipReader.close();
+                    } catch (_) {}
+                }
             }
         }
 
@@ -712,6 +918,9 @@
                 }
 
                 const normalizedText = text.replace(/\s+/g, ' ');
+                if (normalizedText.trim().length < 40) {
+                    throw new Error('pdf_without_text_layer');
+                }
 
                 let extraido = {
                     salario_bruto_mensual: 2000,
@@ -797,17 +1006,13 @@
 
             } catch (error) {
                 console.error("Fallo procesando el PDF:", error);
-                mostrarError();
+                throw error;
             }
-        }
-
-        function mostrarError() {
-            sectionLoading.classList.add('hidden');
-            errorModal.classList.remove('hidden');
         }
 
         function closeErrorAndProceed() {
             errorModal.classList.add('hidden');
+            sectionLoading.classList.add('hidden');
             sectionUpload.classList.add('hidden');
             sectionCalculator.classList.remove('hidden');
             calcularLiquidacion();
