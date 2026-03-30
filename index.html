@@ -405,7 +405,9 @@
                                     <span id="res-paro-resto" class="text-lg font-bold text-white">0,00 € <span class="text-xs text-cyan-400 font-normal">/mes</span></span>
                                 </div>
                             </div>
-                            <p id="msg-paro-tope" class="text-xs text-cyan-300 mt-2 italic hidden"><i class="fa-solid fa-circle-info mr-1"></i> Esta cantidad está limitada por el tope máximo legal según tus hijos a cargo.</p>
+                            
+                            <!-- MENSAJE DINÁMICO DE TOPES -->
+                            <div id="msg-paro-tope" class="hidden mt-2"></div>
                             
                             <!-- NOTA DINÁMICA: Ajuste manual del Paro -->
                             <div class="mt-3 bg-cyan-800/40 p-2.5 rounded border border-cyan-700/50 flex items-start">
@@ -955,19 +957,35 @@
                 let topadoTramo2 = false;
 
                 // Aplicar Topes Tramo 1 (Primeros 6 meses)
-                if (paroTramo1 > topeMax) { paroTramo1 = topeMax; topadoTramo1 = true; }
-                if (paroTramo1 < topeMin) { paroTramo1 = topeMin; }
+                let hitMax = false;
+                let hitMin = false;
+
+                if (paroTramo1 > topeMax) { paroTramo1 = topeMax; hitMax = true; }
+                if (paroTramo1 < topeMin) { paroTramo1 = topeMin; hitMin = true; }
 
                 // Aplicar Topes Tramo 2 (Mes 7 en adelante)
-                if (paroTramo2 > topeMax) { paroTramo2 = topeMax; topadoTramo2 = true; }
-                if (paroTramo2 < topeMin) { paroTramo2 = topeMin; }
+                if (paroTramo2 > topeMax) { paroTramo2 = topeMax; hitMax = true; }
+                if (paroTramo2 < topeMin) { paroTramo2 = topeMin; hitMin = true; }
 
                 const formatoMonedaSEPE = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
                 resParo6Meses.innerHTML = `${formatoMonedaSEPE.format(paroTramo1)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
                 resParoResto.innerHTML = `${formatoMonedaSEPE.format(paroTramo2)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
 
-                if (topadoTramo1 || topadoTramo2) {
-                    msgParoTope.classList.remove('hidden');
+                // Mostrar mensaje explicativo sobre topes e hijos
+                msgParoTope.classList.remove('hidden');
+                if (hitMax) {
+                    if (numHijos === 0) {
+                        msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal para personas <b>sin hijos</b> a cargo. (Tener hijos elevaría este tope máximo).`;
+                    } else {
+                        msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal. Tener hijos ha elevado este tope, pero no puedes cobrar más de esta cantidad mensual.`;
+                    }
+                    msgParoTope.className = "text-xs text-yellow-300 mt-3 block bg-yellow-900/30 p-2.5 rounded-lg border border-yellow-700/50 leading-relaxed";
+                } else if (hitMin) {
+                    msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope mínimo aplicado:</b> El SEPE garantiza un importe mínimo mensual según los hijos a cargo, por lo que tu prestación se ha elevado a este mínimo legal.`;
+                    msgParoTope.className = "text-xs text-emerald-300 mt-3 block bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-700/50 leading-relaxed";
+                } else if (numHijos > 0) {
+                    msgParoTope.innerHTML = `<i class="fa-solid fa-circle-info mr-1"></i> Percibes tu porcentaje íntegro (70%/60%). Tener hijos sube los <b>topes máximos legales</b> del SEPE, pero como tu salario base no los sobrepasa, esta variable no modifica tu prestación final.`;
+                    msgParoTope.className = "text-xs text-cyan-300 mt-3 block bg-cyan-950/50 p-2.5 rounded-lg border border-cyan-800 leading-relaxed";
                 } else {
                     msgParoTope.classList.add('hidden');
                 }
