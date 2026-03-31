@@ -47,30 +47,56 @@
                 Calcula tu indemnización, finiquito y paro
             </h1>
             <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                Sube tu nómina. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b>. Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
+                Sube tu nómina o rellena los datos manualmente. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b>. Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
             </p>
         </div>
 
-        <!-- SECCIÓN 1: Subida de archivo -->
-        <div id="upload-section" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center smooth-transition">
-            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 cursor-pointer hover:bg-gray-50 transition-colors" role="button" tabindex="0" aria-label="Seleccionar nómina PDF o ZIP" aria-controls="file-input">
-                <div class="flex justify-center space-x-4 mb-4">
-                    <i class="fa-solid fa-file-pdf text-5xl text-red-500"></i>
-                    <i class="fa-solid fa-file-zipper text-5xl text-yellow-500"></i>
+        <!-- SECCIÓN 1: Entrada (archivo o manual) -->
+        <div id="upload-section" class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 smooth-transition">
+            <div class="relative bg-white rounded-2xl shadow-sm border-2 border-emerald-200 p-8 sm:p-10 text-center">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-semibold shadow-sm">
+                    <i class="fa-solid fa-star mr-1"></i> Opción recomendada
+                </span>
+                <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 cursor-pointer hover:bg-gray-50 transition-colors" role="button" tabindex="0" aria-label="Seleccionar nómina PDF o ZIP" aria-controls="file-input">
+                    <div class="flex justify-center space-x-4 mb-4">
+                        <i class="fa-solid fa-file-pdf text-5xl text-red-500"></i>
+                        <i class="fa-solid fa-file-zipper text-5xl text-yellow-500"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">Sube tu nómina (PDF o ZIP)</h3>
+                    <p class="text-sm text-gray-500 mb-4">Arrastra y suelta tu archivo aquí, o haz clic para buscar</p>
+                    <p class="text-xs text-emerald-700 mb-3">Más rápido y más preciso: detectamos salario, fecha, IRPF y base de cotización automáticamente.</p>
+                    <div class="inline-flex items-center justify-center px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md mb-2">
+                        <i class="fa-solid fa-lock mr-2"></i> Procesamiento 100% Seguro y Local
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept=".pdf,.zip,application/pdf,application/zip,application/x-zip-compressed">
+                    <!-- Fallback para móviles: sin filtro MIME para abrir más proveedores (Archivos/Drive/etc.) -->
+                    <input type="file" id="file-input-fallback" class="hidden">
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-1">Sube tu nómina (PDF o ZIP)</h3>
-                <p class="text-sm text-gray-500 mb-4">Arrastra y suelta tu archivo aquí, o haz clic para buscar</p>
-                <div class="inline-flex items-center justify-center px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md mb-2">
-                    <i class="fa-solid fa-lock mr-2"></i> Procesamiento 100% Seguro y Local
-                </div>
-                <input type="file" id="file-input" class="hidden" accept=".pdf,.zip,application/pdf,application/zip,application/x-zip-compressed">
-                <!-- Fallback para móviles: sin filtro MIME para abrir más proveedores (Archivos/Drive/etc.) -->
-                <input type="file" id="file-input-fallback" class="hidden">
+                <button onclick="openFilePicker()" class="mt-6 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-700 hover:bg-emerald-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-700">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Escanear Nómina
+                </button>
+                <p id="mobile-picker-hint" class="hidden mt-3 text-xs text-gray-500">Si en móvil solo ves Foto/Vídeo, abre el menú del selector y elige <b>Archivos</b> o <b>Drive</b>.</p>
             </div>
-            <button onclick="openFilePicker()" class="mt-6 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
-                Seleccionar Archivo
-            </button>
-            <p class="mt-3 text-xs text-gray-500">Si en móvil solo ves Foto/Vídeo, abre el menú del selector y elige <b>Archivos</b> o <b>Drive</b>.</p>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10 flex flex-col justify-between">
+                <div>
+                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 mb-4">
+                        <i class="fa-solid fa-keyboard text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Rellenar sin subir archivo</h3>
+                    <p class="text-sm text-gray-600 mb-4">Ideal si ahora no tienes la nómina a mano. Requiere introducir más datos manualmente.</p>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-5">
+                        <li><i class="fa-solid fa-check text-cyan-600 mr-2"></i>Introduces salario, fechas y variables manualmente.</li>
+                        <li><i class="fa-solid fa-check text-cyan-600 mr-2"></i>Obtienes cálculo de indemnización, finiquito, neto y paro.</li>
+                        <li><i class="fa-solid fa-check text-cyan-600 mr-2"></i>Todo sigue siendo privado y local en tu navegador.</li>
+                    </ul>
+                    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2"><i class="fa-solid fa-lightbulb mr-1"></i> Si tienes la nómina disponible, el escaneo automático suele darte mejor precisión inicial.</p>
+                </div>
+                <button onclick="startManualMode()" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i class="fa-solid fa-pen-to-square mr-2"></i> Continuar en Modo Manual
+                </button>
+                <p class="mt-3 text-xs text-gray-500">Podrás resetear y volver al modo de subida cuando quieras.</p>
+            </div>
         </div>
 
         <!-- SECCIÓN 2: Carga / Procesamiento Local -->
@@ -82,6 +108,19 @@
 
         <!-- SECCIÓN 3: Calculadora y Resultados -->
         <div id="calculator-section" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div id="manual-entry-banner" class="hidden lg:col-span-12 bg-cyan-50 border border-cyan-200 rounded-xl px-4 py-3">
+                <p class="text-sm text-cyan-900 leading-relaxed">
+                    <i class="fa-solid fa-pen-to-square mr-2 text-cyan-600"></i>
+                    Estás en modo manual. Completa tus datos y verás el cálculo al instante. Si tienes tu nómina en PDF/ZIP, el escaneo automático suele darte mayor precisión inicial.
+                </p>
+            </div>
+            <div id="extraction-warning-banner" class="hidden lg:col-span-12 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <p class="text-sm text-amber-900 leading-relaxed">
+                    <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-600"></i>
+                    No hemos podido leer automáticamente todos los campos. Revisa estos datos antes de usar el resultado final:
+                </p>
+                <ul id="extraction-warning-list" class="mt-2 text-sm text-amber-900 list-disc pl-6 space-y-1"></ul>
+            </div>
             
             <!-- Columna Izquierda: Entradas y Negociación -->
             <div class="lg:col-span-7 space-y-6">
@@ -91,8 +130,9 @@
                         <h2 class="text-lg font-semibold text-blue-900 flex items-center">
                             <span class="bg-blue-600 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm mr-2">1</span> Datos de tu Contrato
                         </h2>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                            <i class="fa-solid fa-check mr-1"></i> Extraídos automáticamente
+                        <span id="contract-source-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <i id="contract-source-icon" class="fa-solid fa-check mr-1"></i>
+                            <span id="contract-source-text">Extraídos automáticamente</span>
                         </span>
                     </div>
                     <div class="p-6 space-y-5">
@@ -318,7 +358,7 @@
                                         <span class="text-gray-500 sm:text-sm">€</span>
                                     </div>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-wand-magic-sparkles text-cyan-500 mr-1"></i> Calculada automáticamente de tu nómina.</p>
+                                <p id="base-cotizacion-help" class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-wand-magic-sparkles text-cyan-500 mr-1"></i> Calculada automáticamente de tu nómina.</p>
                             </div>
                         </div>
                     </div>
@@ -481,16 +521,16 @@
                     <div class="mt-3 text-center sm:mt-5">
                         <h3 class="text-lg leading-6 font-medium text-gray-900" id="error-modal-title">Error al leer el Documento</h3>
                         <div class="mt-2">
-                            <p id="error-modal-message" class="text-sm text-gray-500">No hemos podido procesar la nómina automáticamente. Te abriremos la calculadora con datos manuales para que puedas usarla de todos modos.</p>
+                            <p id="error-modal-message" class="text-sm text-gray-500">No hemos podido procesar la nómina automáticamente. Te recomendamos reintentar el escaneo; si no, puedes continuar en modo manual.</p>
                         </div>
                     </div>
                 </div>
                 <div class="mt-5 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onclick="closeErrorAndRetry()" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm">
-                        Reintentar
+                    <button type="button" onclick="closeErrorAndRetry()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:text-sm">
+                        Reintentar Escaneo
                     </button>
-                    <button id="error-modal-continue-btn" type="button" onclick="closeErrorAndProceed()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:text-sm">
-                        Continuar Manualmente
+                    <button id="error-modal-continue-btn" type="button" onclick="closeErrorAndProceed()" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm">
+                        Continuar sin escaneo
                     </button>
                 </div>
             </div>
@@ -513,6 +553,14 @@
         const errorModalTitle = document.getElementById('error-modal-title');
         const errorModalMessage = document.getElementById('error-modal-message');
         const errorModalContinueBtn = document.getElementById('error-modal-continue-btn');
+        const manualEntryBanner = document.getElementById('manual-entry-banner');
+        const mobilePickerHint = document.getElementById('mobile-picker-hint');
+        const extractionWarningBanner = document.getElementById('extraction-warning-banner');
+        const extractionWarningList = document.getElementById('extraction-warning-list');
+        const contractSourceBadge = document.getElementById('contract-source-badge');
+        const contractSourceIcon = document.getElementById('contract-source-icon');
+        const contractSourceText = document.getElementById('contract-source-text');
+        const baseCotizacionHelp = document.getElementById('base-cotizacion-help');
 
         // Inputs Calculadora
         const inputSalario = document.getElementById('input-salario');
@@ -576,14 +624,117 @@
 
         // Variable global para almacenar el archivo zip pendiente
         let currentZipFile = null;
+        let entryMode = 'file';
         const MAX_FILE_SIZE_MB = 20;
         const PASSWORD_ERROR_DEFAULT = "Contraseña incorrecta. Inténtalo de nuevo.";
         const isMobileDevice = /android|iphone|ipad|ipod/i.test((navigator.userAgent || '').toLowerCase());
 
+        if (mobilePickerHint) {
+            mobilePickerHint.classList.toggle('hidden', !isMobileDevice);
+        }
+
+        function limpiarAvisoExtraccion() {
+            if (!extractionWarningBanner || !extractionWarningList) return;
+            extractionWarningList.innerHTML = "";
+            extractionWarningBanner.classList.add('hidden');
+        }
+
+        function mostrarAvisoExtraccion(camposNoDetectados = []) {
+            if (!extractionWarningBanner || !extractionWarningList) return;
+            if (!camposNoDetectados || camposNoDetectados.length === 0) {
+                limpiarAvisoExtraccion();
+                return;
+            }
+
+            extractionWarningList.innerHTML = camposNoDetectados.map(campo => `<li>${campo}</li>`).join('');
+            extractionWarningBanner.classList.remove('hidden');
+        }
+
+        function evaluarSiEsNomina(normalizedText) {
+            const senales = [
+                { regex: /N[ÓO]MINA/i, peso: 2 },
+                { regex: /RECIBO\s+DE\s+SALARIOS?/i, peso: 2 },
+                { regex: /DEVENGOS?/i, peso: 1 },
+                { regex: /DEDUCCIONES?/i, peso: 1 },
+                { regex: /BASE(?:S)?\s+DE\s+COTIZACI[ÓO]N/i, peso: 1 },
+                { regex: /L[ÍI]QUIDO\s+(?:A\s+PERCIBIR|TOTAL)/i, peso: 1 },
+                { regex: /CONTINGENCIAS?|SEGURIDAD\s+SOCIAL/i, peso: 1 },
+                { regex: /PER[ÍI]ODO\s+DE\s+(?:LIQUIDACI[ÓO]N|DEVENGO)/i, peso: 1 }
+            ];
+
+            let score = 0;
+            let hits = 0;
+            senales.forEach(senal => {
+                if (senal.regex.test(normalizedText)) {
+                    score += senal.peso;
+                    hits += 1;
+                }
+            });
+
+            const strong = /N[ÓO]MINA|RECIBO\s+DE\s+SALARIOS?/i.test(normalizedText);
+            const esNomina = (strong && score >= 3) || score >= 4;
+
+            return { esNomina, score, hits };
+        }
+
+        function setEntryMode(mode = 'file') {
+            entryMode = mode;
+            const isManualMode = mode === 'manual';
+
+            if (manualEntryBanner) {
+                manualEntryBanner.classList.toggle('hidden', !isManualMode);
+            }
+            if (isManualMode) {
+                limpiarAvisoExtraccion();
+            }
+
+            if (contractSourceBadge && contractSourceIcon && contractSourceText) {
+                if (isManualMode) {
+                    contractSourceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800";
+                    contractSourceIcon.className = "fa-solid fa-keyboard mr-1";
+                    contractSourceText.textContent = "Introducidos manualmente";
+                } else {
+                    contractSourceBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800";
+                    contractSourceIcon.className = "fa-solid fa-check mr-1";
+                    contractSourceText.textContent = "Extraídos automáticamente";
+                }
+            }
+
+            if (baseCotizacionHelp) {
+                if (isManualMode) {
+                    baseCotizacionHelp.innerHTML = '<i class="fa-solid fa-circle-info text-cyan-500 mr-1"></i> Si no la sabes, usa una estimación. Para mayor precisión, vuelve al escaneo automático con tu nómina.';
+                } else {
+                    baseCotizacionHelp.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-cyan-500 mr-1"></i> Calculada automáticamente de tu nómina.';
+                }
+            }
+
+            if (inputBaseCotizacion) {
+                inputBaseCotizacion.classList.toggle('bg-cyan-50/50', !isManualMode);
+                inputBaseCotizacion.classList.toggle('bg-white', isManualMode);
+            }
+        }
+
         function openFilePicker() {
+            setEntryMode('file');
+            limpiarAvisoExtraccion();
             const targetInput = (isMobileDevice && fileInputFallback) ? fileInputFallback : fileInput;
             targetInput.value = "";
             targetInput.click();
+        }
+
+        function startManualMode() {
+            errorModal.classList.add('hidden');
+            passwordModal.classList.add('hidden');
+            sectionLoading.classList.add('hidden');
+            sectionUpload.classList.add('hidden');
+            sectionCalculator.classList.remove('hidden');
+            setEntryMode('manual');
+            limpiarAvisoExtraccion();
+            currentZipFile = null;
+            fileInput.value = "";
+            if (fileInputFallback) fileInputFallback.value = "";
+            calcularLiquidacion();
+            setTimeout(() => inputSalario.focus(), 50);
         }
 
         function isZipFile(file) {
@@ -621,6 +772,8 @@
             sectionLoading.classList.add('hidden');
             sectionUpload.classList.remove('hidden');
             passwordModal.classList.add('hidden');
+            setEntryMode('file');
+            limpiarAvisoExtraccion();
             currentZipFile = null;
             fileInput.value = "";
             if (fileInputFallback) fileInputFallback.value = "";
@@ -628,6 +781,13 @@
 
         function obtenerDetalleErrorPDF(error) {
             const texto = normalizarMensajeError(error);
+
+            if (texto.includes('not_payroll_pdf')) {
+                return {
+                    titulo: "El PDF no parece una nómina",
+                    mensaje: "No hemos encontrado suficientes señales de nómina (devengos, deducciones, bases de cotización, etc.). Sube una nómina válida o usa el modo manual."
+                };
+            }
 
             if (texto.includes('password') || texto.includes('encrypted')) {
                 return {
@@ -736,6 +896,8 @@
         // --- MANEJO DE ARCHIVOS (PDF Y ZIP) ---
         async function handleFiles(files) {
             if (!files || files.length === 0) return;
+            setEntryMode('file');
+            limpiarAvisoExtraccion();
             const file = files[0];
 
             if (!file || file.size === 0) {
@@ -932,6 +1094,10 @@
                 if (normalizedText.trim().length < 40) {
                     throw new Error('pdf_without_text_layer');
                 }
+                const analisisNomina = evaluarSiEsNomina(normalizedText);
+                if (!analisisNomina.esNomina) {
+                    throw new Error('not_payroll_pdf');
+                }
 
                 let extraido = {
                     salario_bruto_mensual: 2000,
@@ -939,6 +1105,13 @@
                     pagas_extra_prorrateadas: false,
                     comisiones_detectadas: 0,
                     irpf_detectado: 15
+                };
+                const deteccion = {
+                    salario: false,
+                    fechaAntiguedad: false,
+                    prorrateo: false,
+                    irpf: false,
+                    comisiones: false
                 };
 
                 // Antigüedad
@@ -951,11 +1124,18 @@
                     let year = antiMatch[3];
                     if (year.length === 2) year = '20' + year;
                     extraido.fecha_antiguedad = `${year}-${month}-${day}`;
+                    deteccion.fechaAntiguedad = true;
                 }
 
                 // Pagas extra
-                if (/(?:PAGAS?\s+EXTRAS?|P\.P\.EXTRAS?|PRORRATA)/i.test(normalizedText)) {
+                const prorrataPositiva = /(?:PAGAS?\s+EXTRAS?|P\.P\.EXTRAS?|PRORRATA)/i.test(normalizedText);
+                const prorrataNegativa = /(?:14\s+PAGAS|NO\s+PRORRATEAD(?:A|AS)|PAGAS?\s+EXTRAS?\s+NO\s+PRORRATEADAS)/i.test(normalizedText);
+                if (prorrataPositiva && !prorrataNegativa) {
                     extraido.pagas_extra_prorrateadas = true;
+                    deteccion.prorrateo = true;
+                } else if (prorrataNegativa) {
+                    extraido.pagas_extra_prorrateadas = false;
+                    deteccion.prorrateo = true;
                 }
 
                 // COMISIONES
@@ -963,6 +1143,7 @@
                 const comisionMatch = normalizedText.match(comisionRegex);
                 if (comisionMatch) {
                     extraido.comisiones_detectadas = parseFloat(comisionMatch[1].replace(/\./g, '').replace(',', '.'));
+                    deteccion.comisiones = true;
                 }
 
                 // IRPF
@@ -970,20 +1151,36 @@
                 const irpfMatch = normalizedText.match(irpfRegex);
                 if (irpfMatch) {
                     extraido.irpf_detectado = parseFloat(irpfMatch[1].replace(',', '.'));
+                    deteccion.irpf = true;
                 }
 
                 // Salario Bruto Devengado
+                const salarioRegexes = [
+                    /(?:TOTAL\s+DEVENGAD(?:O|OS)|TOTAL\s+DEVENGO)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i,
+                    /(?:BASE\s+DE\s+COTIZACI[ÓO]N(?:\s+POR\s+CONTINGENCIAS\s+COMUNES)?)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i,
+                    /(?:L[ÍI]QUIDO\s+A\s+PERCIBIR)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                ];
+                for (const salarioRegex of salarioRegexes) {
+                    const salarioMatch = normalizedText.match(salarioRegex);
+                    if (salarioMatch) {
+                        extraido.salario_bruto_mensual = parseFloat(salarioMatch[1].replace(/\./g, '').replace(',', '.'));
+                        deteccion.salario = true;
+                        break;
+                    }
+                }
+
                 const allAmountsMatches = [...normalizedText.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)];
                 const amounts = allAmountsMatches.map(m => parseFloat(m[1].replace(/\./g, '').replace(',', '.')));
                 const uniqueAmounts = [...new Set(amounts)].filter(a => a > 500);
                 
-                if (uniqueAmounts.length > 0) {
+                if (!deteccion.salario && uniqueAmounts.length > 0) {
                     uniqueAmounts.sort((a, b) => b - a);
                     if (/COSTE EMPRESA/i.test(normalizedText) && uniqueAmounts.length > 1) {
                         extraido.salario_bruto_mensual = uniqueAmounts[1];
                     } else {
                         extraido.salario_bruto_mensual = uniqueAmounts[0];
                     }
+                    deteccion.salario = true;
                 }
 
                 if (extraido.comisiones_detectadas > 0 && extraido.salario_bruto_mensual > extraido.comisiones_detectadas) {
@@ -1008,10 +1205,18 @@
                 const baseFinal = Math.min(baseSSEE_estimada, 4720.50);
                 inputBaseCotizacion.value = baseFinal.toFixed(2);
 
+                const camposNoDetectados = [];
+                if (!deteccion.salario) camposNoDetectados.push("Salario fijo mensual");
+                if (!deteccion.fechaAntiguedad) camposNoDetectados.push("Fecha de inicio (antigüedad)");
+                if (!deteccion.prorrateo) camposNoDetectados.push("Pagas extra prorrateadas (12/14 pagas)");
+                if (!deteccion.irpf) camposNoDetectados.push("Porcentaje de IRPF");
+                mostrarAvisoExtraccion(camposNoDetectados);
+
                 setTimeout(() => {
                     sectionLoading.classList.add('hidden');
                     sectionUpload.classList.add('hidden');
                     sectionCalculator.classList.remove('hidden');
+                    setEntryMode('file');
                     calcularLiquidacion();
                 }, 800);
 
@@ -1026,12 +1231,15 @@
             sectionLoading.classList.add('hidden');
             sectionUpload.classList.add('hidden');
             sectionCalculator.classList.remove('hidden');
+            setEntryMode('manual');
             calcularLiquidacion();
         }
 
         function resetApp() {
             sectionCalculator.classList.add('hidden');
             sectionUpload.classList.remove('hidden');
+            setEntryMode('file');
+            limpiarAvisoExtraccion();
             fileInput.value = "";
             if (fileInputFallback) fileInputFallback.value = "";
             currentZipFile = null;
