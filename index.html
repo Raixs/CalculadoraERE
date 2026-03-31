@@ -63,11 +63,14 @@
                 <div class="inline-flex items-center justify-center px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md mb-2">
                     <i class="fa-solid fa-lock mr-2"></i> Procesamiento 100% Seguro y Local
                 </div>
-                <input type="file" id="file-input" class="hidden" accept="application/pdf, application/zip, .zip">
+                <input type="file" id="file-input" class="hidden" accept=".pdf,.zip,application/pdf,application/zip,application/x-zip-compressed">
+                <!-- Fallback para móviles: sin filtro MIME para abrir más proveedores (Archivos/Drive/etc.) -->
+                <input type="file" id="file-input-fallback" class="hidden">
             </div>
             <button onclick="openFilePicker()" class="mt-6 w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
                 Seleccionar Archivo
             </button>
+            <p class="mt-3 text-xs text-gray-500">Si en móvil solo ves Foto/Vídeo, abre el menú del selector y elige <b>Archivos</b> o <b>Drive</b>.</p>
         </div>
 
         <!-- SECCIÓN 2: Carga / Procesamiento Local -->
@@ -501,6 +504,7 @@
         const sectionCalculator = document.getElementById('calculator-section');
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
+        const fileInputFallback = document.getElementById('file-input-fallback');
         const errorModal = document.getElementById('error-modal');
         const passwordModal = document.getElementById('password-modal');
         const zipPasswordInput = document.getElementById('zip-password-input');
@@ -574,10 +578,12 @@
         let currentZipFile = null;
         const MAX_FILE_SIZE_MB = 20;
         const PASSWORD_ERROR_DEFAULT = "Contraseña incorrecta. Inténtalo de nuevo.";
+        const isMobileDevice = /android|iphone|ipad|ipod/i.test((navigator.userAgent || '').toLowerCase());
 
         function openFilePicker() {
-            fileInput.value = "";
-            fileInput.click();
+            const targetInput = (isMobileDevice && fileInputFallback) ? fileInputFallback : fileInput;
+            targetInput.value = "";
+            targetInput.click();
         }
 
         function isZipFile(file) {
@@ -617,6 +623,7 @@
             passwordModal.classList.add('hidden');
             currentZipFile = null;
             fileInput.value = "";
+            if (fileInputFallback) fileInputFallback.value = "";
         }
 
         function obtenerDetalleErrorPDF(error) {
@@ -699,6 +706,9 @@
         });
         dropZone.addEventListener('drop', (e) => { handleFiles(e.dataTransfer.files); });
         fileInput.addEventListener('change', function() { handleFiles(this.files); });
+        if (fileInputFallback) {
+            fileInputFallback.addEventListener('change', function() { handleFiles(this.files); });
+        }
 
         selectPreaviso.addEventListener('change', () => {
             if (selectPreaviso.value === 'custom') {
@@ -784,6 +794,7 @@
             passwordModal.classList.add('hidden');
             currentZipFile = null;
             fileInput.value = "";
+            if (fileInputFallback) fileInputFallback.value = "";
         }
 
         zipPasswordInput.addEventListener('keypress', function (e) {
@@ -1022,6 +1033,7 @@
             sectionCalculator.classList.add('hidden');
             sectionUpload.classList.remove('hidden');
             fileInput.value = "";
+            if (fileInputFallback) fileInputFallback.value = "";
             currentZipFile = null;
             sliderDias.value = 20; valDias.textContent = "20 días";
             sliderTopes.value = 12; valTopes.textContent = "12 meses";
