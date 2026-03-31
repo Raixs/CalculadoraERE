@@ -1113,6 +1113,13 @@
                     irpf: false,
                     comisiones: false
                 };
+                let fuenteSalario = 'default';
+                let salarioBajaConfianza = false;
+
+                const parseImporteNomina = (importeTexto) => {
+                    if (!importeTexto) return NaN;
+                    return parseFloat(importeTexto.replace(/\./g, '').replace(',', '.'));
+                };
 
                 // Antigüedad
                 const antiRegex = /(?:ANTIGUEDA\s*D|ANTIG[UÜ]EDAD|FECHA ALTA)[\s\S]{1,100}?(\d{1,2})\s+(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC)\s+(\d{2,4})/i;
@@ -1154,38 +1161,96 @@
                     deteccion.irpf = true;
                 }
 
-                // Salario Bruto Devengado
-                const salarioRegexes = [
-                    /(?:TOTAL\s+DEVENGAD(?:O|OS)|TOTAL\s+DEVENGO)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i,
-                    /(?:BASE\s+DE\s+COTIZACI[ÓO]N(?:\s+POR\s+CONTINGENCIAS\s+COMUNES)?)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i,
-                    /(?:L[ÍI]QUIDO\s+A\s+PERCIBIR)[^\d]{0,25}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                // Salario bruto mensual: priorizamos etiquetas salariales más fiables.
+                const fuentesSalario = [
+                    {
+                        id: 'rem_total',
+                        bajaConfianza: false,
+                        regexes: [
+                            /(?:REM(?:UNERACI[ÓO]N)?\.?\s*TOTAL|RETRIBUCI[ÓO]N\s+TOTAL)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                        ]
+                    },
+                    {
+                        id: 'base_ss',
+                        bajaConfianza: false,
+                        regexes: [
+                            /(?:BASE\s*S\.?\s*S\.?|BASE\s+SEGURIDAD\s+SOCIAL|BASE\s+CC|B\.?\s*C\.?\s*C\.?)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                        ]
+                    },
+                    {
+                        id: 'base_cotizacion',
+                        bajaConfianza: false,
+                        regexes: [
+                            /(?:BASE(?:S)?\s+DE\s+COTIZACI[ÓO]N(?:\s+POR\s+CONTINGENCIAS\s+COMUNES)?)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                        ]
+                    },
+                    {
+                        id: 't_devengado',
+                        bajaConfianza: true,
+                        regexes: [
+                            /(?:T\.?\s*DEVENGAD(?:O|OS)|TOTAL\s+DEVENGAD(?:O|OS)|TOTAL\s+DEVENGO)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                        ]
+                    },
+                    {
+                        id: 'liquido_percibir',
+                        bajaConfianza: true,
+                        regexes: [
+                            /(?:L[ÍI]QUIDO\s+A\s+PERCIBIR|NETO\s+A\s+PERCIBIR)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i
+                        ]
+                    }
                 ];
-                for (const salarioRegex of salarioRegexes) {
-                    const salarioMatch = normalizedText.match(salarioRegex);
-                    if (salarioMatch) {
-                        extraido.salario_bruto_mensual = parseFloat(salarioMatch[1].replace(/\./g, '').replace(',', '.'));
+
+                for (const fuente of fuentesSalario) {
+                    for (const salarioRegex of fuente.regexes) {
+                        const salarioMatch = normalizedText.match(salarioRegex);
+                        if (!salarioMatch) continue;
+
+                        const candidatoSalario = parseImporteNomina(salarioMatch[1]);
+                        if (!Number.isFinite(candidatoSalario) || candidatoSalario < 450 || candidatoSalario > 50000) continue;
+
+                        extraido.salario_bruto_mensual = candidatoSalario;
                         deteccion.salario = true;
+                        fuenteSalario = fuente.id;
+                        salarioBajaConfianza = fuente.bajaConfianza;
                         break;
                     }
+                    if (deteccion.salario) break;
                 }
 
                 const allAmountsMatches = [...normalizedText.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)];
-                const amounts = allAmountsMatches.map(m => parseFloat(m[1].replace(/\./g, '').replace(',', '.')));
+                const amounts = allAmountsMatches.map(m => parseImporteNomina(m[1]));
                 const uniqueAmounts = [...new Set(amounts)].filter(a => a > 500);
+                const frequencyMap = new Map();
+                amounts.forEach(valor => {
+                    if (!Number.isFinite(valor) || valor <= 500) return;
+                    const key = valor.toFixed(2);
+                    frequencyMap.set(key, (frequencyMap.get(key) || 0) + 1);
+                });
                 
                 if (!deteccion.salario && uniqueAmounts.length > 0) {
                     uniqueAmounts.sort((a, b) => b - a);
-                    if (/COSTE EMPRESA/i.test(normalizedText) && uniqueAmounts.length > 1) {
-                        extraido.salario_bruto_mensual = uniqueAmounts[1];
-                    } else {
-                        extraido.salario_bruto_mensual = uniqueAmounts[0];
+                    const valoresOrdenados = /COSTE EMPRESA/i.test(normalizedText) ? uniqueAmounts.slice(1) : uniqueAmounts;
+                    const candidatoRecurrente = [...frequencyMap.entries()]
+                        .map(([valor, repeticiones]) => ({ valor: parseFloat(valor), repeticiones }))
+                        .filter(item => item.valor >= 700 && item.valor <= 15000 && item.repeticiones >= 2)
+                        .sort((a, b) => b.repeticiones - a.repeticiones || b.valor - a.valor)[0];
+                    const candidatoFallback = (candidatoRecurrente && candidatoRecurrente.valor)
+                        || valoresOrdenados.find(valor => valor >= 700 && valor <= 15000)
+                        || valoresOrdenados[0]
+                        || uniqueAmounts[0];
+
+                    if (Number.isFinite(candidatoFallback)) {
+                        extraido.salario_bruto_mensual = candidatoFallback;
+                        deteccion.salario = true;
+                        fuenteSalario = 'fallback';
+                        salarioBajaConfianza = true;
                     }
-                    deteccion.salario = true;
                 }
 
                 if (extraido.comisiones_detectadas > 0 && extraido.salario_bruto_mensual > extraido.comisiones_detectadas) {
                     extraido.salario_bruto_mensual -= extraido.comisiones_detectadas;
                 }
+                console.info(`[Extracción nómina] Fuente salario: ${fuenteSalario}, valor: ${extraido.salario_bruto_mensual}`);
 
                 // Aplicar a los inputs principales
                 inputSalario.value = extraido.salario_bruto_mensual.toFixed(2);
@@ -1207,6 +1272,7 @@
 
                 const camposNoDetectados = [];
                 if (!deteccion.salario) camposNoDetectados.push("Salario fijo mensual");
+                if (salarioBajaConfianza) camposNoDetectados.push("Salario detectado con baja confianza (revisa el importe mensual).");
                 if (!deteccion.fechaAntiguedad) camposNoDetectados.push("Fecha de inicio (antigüedad)");
                 if (!deteccion.prorrateo) camposNoDetectados.push("Pagas extra prorrateadas (12/14 pagas)");
                 if (!deteccion.irpf) camposNoDetectados.push("Porcentaje de IRPF");
