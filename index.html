@@ -620,7 +620,137 @@
         const lblParoAnos = document.getElementById('lbl-paro-anos'); // NUEVO ETIQUETA DINÁMICA
         const lblParoHijos = document.getElementById('lbl-paro-hijos'); // NUEVO ETIQUETA DINÁMICA
 
-        inputFechaDespido.valueAsDate = new Date();
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+        const LEGAL_LIMITS = {
+            socialSecurity: {
+                sourceYear: 2025,
+                maxMonthlyContributionBase: 4909.50
+            },
+            unemployment: {
+                sourceYear: 2026,
+                minWithoutChildren: 560.00,
+                minWithChildren: 749.00,
+                maxWithoutChildren: 1225.00,
+                maxWithOneChild: 1400.00,
+                maxWithTwoOrMoreChildren: 1575.00
+            }
+        };
+
+        function formatearFechaInputLocal(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseDateInputLocal(value) {
+            if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+            const [year, month, day] = value.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+
+            if (
+                date.getFullYear() !== year ||
+                date.getMonth() !== month - 1 ||
+                date.getDate() !== day
+            ) {
+                return null;
+            }
+
+            return date;
+        }
+
+        function calcularDiasNaturalesEntreFechas(fechaInicio, fechaFin) {
+            if (!(fechaInicio instanceof Date) || !(fechaFin instanceof Date)) return 0;
+
+            const inicioUTC = Date.UTC(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
+            const finUTC = Date.UTC(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
+
+            if (finUTC <= inicioUTC) return 0;
+            return Math.floor((finUTC - inicioUTC) / MS_PER_DAY);
+        }
+
+        function calcularAntiguedadDetallada(fechaInicio, fechaFin) {
+            const totalDias = calcularDiasNaturalesEntreFechas(fechaInicio, fechaFin);
+            if (totalDias === 0) {
+                return { totalDias: 0, años: 0, meses: 0, dias: 0 };
+            }
+
+            let años = fechaFin.getFullYear() - fechaInicio.getFullYear();
+            let meses = fechaFin.getMonth() - fechaInicio.getMonth();
+            let dias = fechaFin.getDate() - fechaInicio.getDate();
+
+            if (dias < 0) {
+                meses -= 1;
+                dias += new Date(fechaFin.getFullYear(), fechaFin.getMonth(), 0).getDate();
+            }
+
+            if (meses < 0) {
+                años -= 1;
+                meses += 12;
+            }
+
+            return {
+                totalDias,
+                años: Math.max(0, años),
+                meses: Math.max(0, meses),
+                dias: Math.max(0, dias)
+            };
+        }
+
+        function formatearAntiguedad(detalleAntiguedad) {
+            const formatearUnidad = (valor, singular, plural) => `${valor} ${valor === 1 ? singular : plural}`;
+            const partes = [
+                formatearUnidad(detalleAntiguedad.años, 'año', 'años'),
+                formatearUnidad(detalleAntiguedad.meses, 'mes', 'meses')
+            ];
+
+            if (detalleAntiguedad.dias > 0) {
+                partes.push(formatearUnidad(detalleAntiguedad.dias, 'día', 'días'));
+            }
+
+            if (partes.length === 2) {
+                return `${partes[0]} y ${partes[1]}`;
+            }
+
+            return `${partes[0]}, ${partes[1]} y ${partes[2]}`;
+        }
+
+        function normalizarAnoNomina(yearText) {
+            if (!yearText) return null;
+            if (yearText.length === 4) return yearText;
+
+            const yearNum = parseInt(yearText, 10);
+            if (!Number.isFinite(yearNum)) return null;
+
+            const currentYear = new Date().getFullYear();
+            let normalizedYear = 2000 + yearNum;
+
+            if (normalizedYear > currentYear + 1) {
+                normalizedYear -= 100;
+            }
+
+            return String(normalizedYear);
+        }
+
+        inputFechaDespido.value = formatearFechaInputLocal();
+
+        const INITIAL_FORM_STATE = {
+            salario: inputSalario.value,
+            comisiones: inputComisiones.value,
+            fechaAntiguedad: inputFecha.value,
+            fechaDespido: inputFechaDespido.value,
+            prorrateo: inputProrrateo.checked,
+            diasIndemnizacion: sliderDias.value,
+            topeMensualidades: sliderTopes.value,
+            vacaciones: inputVacaciones.value,
+            preaviso: selectPreaviso.value,
+            preavisoCustom: inputPreaviso.value,
+            irpf: inputIrpf.value,
+            tiempoCotizado: selectTiempoCotizado.value,
+            hijos: selectHijos.value,
+            baseCotizacion: inputBaseCotizacion.value
+        };
 
         // Variable global para almacenar el archivo zip pendiente
         let currentZipFile = null;
@@ -1128,10 +1258,11 @@
                     const day = antiMatch[1].padStart(2, '0');
                     const monthNames = { 'ENE': '01', 'FEB': '02', 'MAR': '03', 'ABR': '04', 'MAY': '05', 'JUN': '06', 'JUL': '07', 'AGO': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DIC': '12' };
                     const month = monthNames[antiMatch[2].toUpperCase()];
-                    let year = antiMatch[3];
-                    if (year.length === 2) year = '20' + year;
-                    extraido.fecha_antiguedad = `${year}-${month}-${day}`;
-                    deteccion.fechaAntiguedad = true;
+                    let year = normalizarAnoNomina(antiMatch[3]);
+                    if (year) {
+                        extraido.fecha_antiguedad = `${year}-${month}-${day}`;
+                        deteccion.fechaAntiguedad = true;
+                    }
                 }
 
                 // Pagas extra
@@ -1266,8 +1397,8 @@
                     ? salarioTotalMensualizado 
                     : salarioTotalMensualizado + (extraido.salario_bruto_mensual * 2 / 12);
                 
-                // El máximo legal de cotización a la SS en España es ~4720.50 (2024/2025)
-                const baseFinal = Math.min(baseSSEE_estimada, 4720.50);
+                // Topada a la base máxima vigente que tenemos configurada en la app.
+                const baseFinal = Math.min(baseSSEE_estimada, LEGAL_LIMITS.socialSecurity.maxMonthlyContributionBase);
                 inputBaseCotizacion.value = baseFinal.toFixed(2);
 
                 const camposNoDetectados = [];
@@ -1309,20 +1440,27 @@
             fileInput.value = "";
             if (fileInputFallback) fileInputFallback.value = "";
             currentZipFile = null;
-            sliderDias.value = 20; valDias.textContent = "20 días";
-            sliderTopes.value = 12; valTopes.textContent = "12 meses";
-            inputVacaciones.value = 0;
-            selectPreaviso.value = "0";
-            inputPreaviso.value = 0;
-            inputComisiones.value = 0;
-            inputIrpf.value = 15;
+            inputSalario.value = INITIAL_FORM_STATE.salario;
+            inputComisiones.value = INITIAL_FORM_STATE.comisiones;
+            inputFecha.value = INITIAL_FORM_STATE.fechaAntiguedad;
+            inputProrrateo.checked = INITIAL_FORM_STATE.prorrateo;
+            sliderDias.value = INITIAL_FORM_STATE.diasIndemnizacion;
+            valDias.textContent = `${INITIAL_FORM_STATE.diasIndemnizacion} días`;
+            sliderTopes.value = INITIAL_FORM_STATE.topeMensualidades;
+            valTopes.textContent = `${INITIAL_FORM_STATE.topeMensualidades} meses`;
+            txtTopeMeses.textContent = INITIAL_FORM_STATE.topeMensualidades;
+            inputVacaciones.value = INITIAL_FORM_STATE.vacaciones;
+            selectPreaviso.value = INITIAL_FORM_STATE.preaviso;
+            inputPreaviso.value = INITIAL_FORM_STATE.preavisoCustom;
+            inputIrpf.value = INITIAL_FORM_STATE.irpf;
             divPreavisoCustom.classList.add('hidden');
-            inputFechaDespido.valueAsDate = new Date();
+            inputFechaDespido.value = formatearFechaInputLocal();
             
             // Reset Paro
-            selectTiempoCotizado.value = "24";
-            selectHijos.value = "0";
-            inputBaseCotizacion.value = 0;
+            selectTiempoCotizado.value = INITIAL_FORM_STATE.tiempoCotizado;
+            selectHijos.value = INITIAL_FORM_STATE.hijos;
+            inputBaseCotizacion.value = INITIAL_FORM_STATE.baseCotizacion;
+            msgParoTope.classList.add('hidden');
         }
 
         // --- LÓGICA MATEMÁTICA PRINCIPAL Y PARO (SEPE) ---
@@ -1334,14 +1472,17 @@
             const comisionesMensuales = parseFloat(inputComisiones.value.toString().replace(',', '.')) || 0; 
             const baseCotizacionParo = parseFloat(inputBaseCotizacion.value.toString().replace(',', '.')) || 0; 
             
-            const fechaAntiguedad = new Date(inputFecha.value);
-            const fechaDespido = new Date(inputFechaDespido.value) || new Date();
+            const fechaAntiguedad = parseDateInputLocal(inputFecha.value);
+            const fechaDespido = parseDateInputLocal(inputFechaDespido.value) || parseDateInputLocal(formatearFechaInputLocal());
             const prorrateado = inputProrrateo.checked;
             const diasPorAno = parseInt(sliderDias.value);
             const topeMeses = parseInt(sliderTopes.value);
-            const diasVacaciones = parseInt(inputVacaciones.value) || 0;
+            const diasVacaciones = Math.max(0, parseInt(inputVacaciones.value, 10) || 0);
             
-            let diasPreaviso = selectPreaviso.value === 'custom' ? (parseInt(inputPreaviso.value) || 0) : (parseInt(selectPreaviso.value) || 0);
+            let diasPreaviso = selectPreaviso.value === 'custom'
+                ? (parseInt(inputPreaviso.value, 10) || 0)
+                : (parseInt(selectPreaviso.value, 10) || 0);
+            diasPreaviso = Math.min(15, Math.max(0, diasPreaviso));
 
             // --- 1. ERE Y FINIQUITO ---
             const multiplicadorPagas = prorrateado ? 12 : 14;
@@ -1351,19 +1492,10 @@
             const salarioAnual = salarioFijoAnual + salarioVariableAnual;
             const salarioDiario = salarioAnual / 365;
 
-            let mesesAntiguedad = 0;
-            if (fechaAntiguedad < fechaDespido) {
-                const diffAños = fechaDespido.getFullYear() - fechaAntiguedad.getFullYear();
-                const diffMeses = fechaDespido.getMonth() - fechaAntiguedad.getMonth();
-                const diffDias = fechaDespido.getDate() - fechaAntiguedad.getDate();
-                mesesAntiguedad = (diffAños * 12) + diffMeses;
-                if (diffDias > 0) mesesAntiguedad += 1; 
-            }
-            if (mesesAntiguedad < 0) mesesAntiguedad = 0;
-            
-            const añosParaCalculo = mesesAntiguedad / 12;
-            const añosDisplay = Math.floor(mesesAntiguedad / 12);
-            const mesesDisplay = mesesAntiguedad % 12;
+            const antiguedad = (fechaAntiguedad && fechaDespido)
+                ? calcularAntiguedadDetallada(fechaAntiguedad, fechaDespido)
+                : { totalDias: 0, años: 0, meses: 0, dias: 0 };
+            const añosParaCalculo = antiguedad.totalDias / 365;
 
             const valorDeUnDiaEnNegociacion = añosParaCalculo * salarioDiario;
 
@@ -1385,7 +1517,7 @@
             let pagoPagasExtra = 0;
             if (!prorrateado) {
                 const inicioAno = new Date(fechaDespido.getFullYear(), 0, 1);
-                const diasEnAno = Math.floor((fechaDespido - inicioAno) / (1000 * 60 * 60 * 24)) + 1;
+                const diasEnAno = calcularDiasNaturalesEntreFechas(inicioAno, fechaDespido) + 1;
                 const pagasExtraAnuales = salarioFijoMensual * 2; 
                 pagoPagasExtra = pagasExtraAnuales * (diasEnAno / 365);
                 rowPagasExtra.style.display = 'flex';
@@ -1414,6 +1546,7 @@
                 resParoMeses.textContent = "Sin derecho";
                 resParoMeses.classList.replace('bg-cyan-800', 'bg-red-800');
                 resParoMeses.classList.replace('border-cyan-600', 'border-red-600');
+                msgParoTope.classList.add('hidden');
             } else {
                 divSinParo.classList.add('hidden');
                 divParoResults.classList.remove('hidden');
@@ -1421,64 +1554,73 @@
                 resParoMeses.classList.replace('bg-red-800', 'bg-cyan-800');
                 resParoMeses.classList.replace('border-red-600', 'border-cyan-600');
 
-                // Los cálculos del SEPE: 70% los primeros 6 meses, 60% a partir del 7º mes.
-                let paroTramo1 = baseCotizacionParo * 0.70;
-                let paroTramo2 = baseCotizacionParo * 0.60;
-
-                // Topes Máximos y Mínimos SEPE (Valores IPREM referenciales actualizados 2024/2025)
-                const topeMinimoSinHijos = 560; // Aprox 80% IPREM + 1/6
-                const topeMinimoConHijos = 750; // Aprox 107% IPREM + 1/6
-                const topeMaximoSinHijos = 1225; // Aprox 175% IPREM + 1/6
-                const topeMaximo1Hijo = 1400; // Aprox 200% IPREM + 1/6
-                const topeMaximo2Hijos = 1575; // Aprox 225% IPREM + 1/6
-
-                let topeMax, topeMin;
-                if (numHijos === 0) {
-                    topeMin = topeMinimoSinHijos;
-                    topeMax = topeMaximoSinHijos;
-                } else if (numHijos === 1) {
-                    topeMin = topeMinimoConHijos;
-                    topeMax = topeMaximo1Hijo;
-                } else {
-                    topeMin = topeMinimoConHijos;
-                    topeMax = topeMaximo2Hijos;
-                }
-
-                let topadoTramo1 = false;
-                let topadoTramo2 = false;
-
-                // Aplicar Topes Tramo 1 (Primeros 6 meses)
-                let hitMax = false;
-                let hitMin = false;
-
-                if (paroTramo1 > topeMax) { paroTramo1 = topeMax; hitMax = true; }
-                if (paroTramo1 < topeMin) { paroTramo1 = topeMin; hitMin = true; }
-
-                // Aplicar Topes Tramo 2 (Mes 7 en adelante)
-                if (paroTramo2 > topeMax) { paroTramo2 = topeMax; hitMax = true; }
-                if (paroTramo2 < topeMin) { paroTramo2 = topeMin; hitMin = true; }
-
                 const formatoMonedaSEPE = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
-                resParo6Meses.innerHTML = `${formatoMonedaSEPE.format(paroTramo1)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
-                resParoResto.innerHTML = `${formatoMonedaSEPE.format(paroTramo2)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+                const mostrarMensajeParo = (html, className) => {
+                    msgParoTope.innerHTML = html;
+                    msgParoTope.className = className;
+                };
 
-                // Mostrar mensaje explicativo sobre topes e hijos
-                msgParoTope.classList.remove('hidden');
-                if (hitMax) {
-                    if (numHijos === 0) {
-                        msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal para personas <b>sin hijos</b> a cargo. (Tener hijos elevaría este tope máximo).`;
-                    } else {
-                        msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal. Tener hijos ha elevado este tope, pero no puedes cobrar más de esta cantidad mensual.`;
-                    }
-                    msgParoTope.className = "text-xs text-yellow-300 mt-3 block bg-yellow-900/30 p-2.5 rounded-lg border border-yellow-700/50 leading-relaxed";
-                } else if (hitMin) {
-                    msgParoTope.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope mínimo aplicado:</b> El SEPE garantiza un importe mínimo mensual según los hijos a cargo, por lo que tu prestación se ha elevado a este mínimo legal.`;
-                    msgParoTope.className = "text-xs text-emerald-300 mt-3 block bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-700/50 leading-relaxed";
-                } else if (numHijos > 0) {
-                    msgParoTope.innerHTML = `<i class="fa-solid fa-circle-info mr-1"></i> Percibes tu porcentaje íntegro (70%/60%). Tener hijos sube los <b>topes máximos legales</b> del SEPE, pero como tu salario base no los sobrepasa, esta variable no modifica tu prestación final.`;
-                    msgParoTope.className = "text-xs text-cyan-300 mt-3 block bg-cyan-950/50 p-2.5 rounded-lg border border-cyan-800 leading-relaxed";
+                if (baseCotizacionParo <= 0) {
+                    resParo6Meses.innerHTML = `${formatoMonedaSEPE.format(0)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+                    resParoResto.innerHTML = `${formatoMonedaSEPE.format(0)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+                    mostrarMensajeParo(
+                        '<i class="fa-solid fa-circle-info mr-1"></i> Introduce tu base de cotización media de los últimos 180 días para estimar el paro. Mientras esté vacía o a 0, no aplicamos mínimos legales para evitar un resultado engañoso.',
+                        "text-xs text-cyan-300 mt-3 block bg-cyan-950/50 p-2.5 rounded-lg border border-cyan-800 leading-relaxed"
+                    );
                 } else {
-                    msgParoTope.classList.add('hidden');
+                    // Los cálculos del SEPE: 70% los primeros 6 meses, 60% a partir del 7º mes.
+                    let paroTramo1 = baseCotizacionParo * 0.70;
+                    let paroTramo2 = baseCotizacionParo * 0.60;
+
+                    let topeMax, topeMin;
+                    if (numHijos === 0) {
+                        topeMin = LEGAL_LIMITS.unemployment.minWithoutChildren;
+                        topeMax = LEGAL_LIMITS.unemployment.maxWithoutChildren;
+                    } else if (numHijos === 1) {
+                        topeMin = LEGAL_LIMITS.unemployment.minWithChildren;
+                        topeMax = LEGAL_LIMITS.unemployment.maxWithOneChild;
+                    } else {
+                        topeMin = LEGAL_LIMITS.unemployment.minWithChildren;
+                        topeMax = LEGAL_LIMITS.unemployment.maxWithTwoOrMoreChildren;
+                    }
+
+                    let hitMax = false;
+                    let hitMin = false;
+
+                    if (paroTramo1 > topeMax) { paroTramo1 = topeMax; hitMax = true; }
+                    if (paroTramo1 < topeMin) { paroTramo1 = topeMin; hitMin = true; }
+
+                    if (paroTramo2 > topeMax) { paroTramo2 = topeMax; hitMax = true; }
+                    if (paroTramo2 < topeMin) { paroTramo2 = topeMin; hitMin = true; }
+
+                    resParo6Meses.innerHTML = `${formatoMonedaSEPE.format(paroTramo1)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+                    resParoResto.innerHTML = `${formatoMonedaSEPE.format(paroTramo2)} <span class="text-xs text-cyan-400 font-normal">/mes</span>`;
+
+                    if (hitMax) {
+                        if (numHijos === 0) {
+                            mostrarMensajeParo(
+                                `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal ${LEGAL_LIMITS.unemployment.sourceYear} para personas <b>sin hijos</b> a cargo. Tener hijos elevaría este tope máximo.`,
+                                "text-xs text-yellow-300 mt-3 block bg-yellow-900/30 p-2.5 rounded-lg border border-yellow-700/50 leading-relaxed"
+                            );
+                        } else {
+                            mostrarMensajeParo(
+                                `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope máximo aplicado:</b> Tu prestación supera el límite legal ${LEGAL_LIMITS.unemployment.sourceYear}. Tener hijos ha elevado este tope, pero no puedes cobrar más de esta cantidad mensual.`,
+                                "text-xs text-yellow-300 mt-3 block bg-yellow-900/30 p-2.5 rounded-lg border border-yellow-700/50 leading-relaxed"
+                            );
+                        }
+                    } else if (hitMin) {
+                        mostrarMensajeParo(
+                            `<i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Tope mínimo aplicado:</b> El SEPE garantiza un importe mínimo mensual ${LEGAL_LIMITS.unemployment.sourceYear} según los hijos a cargo, por lo que tu prestación se ha elevado a este mínimo legal.`,
+                            "text-xs text-emerald-300 mt-3 block bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-700/50 leading-relaxed"
+                        );
+                    } else if (numHijos > 0) {
+                        mostrarMensajeParo(
+                            `<i class="fa-solid fa-circle-info mr-1"></i> Percibes tu porcentaje íntegro (70%/60%). Tener hijos sube los <b>topes máximos legales ${LEGAL_LIMITS.unemployment.sourceYear}</b> del SEPE, pero como tu base no los sobrepasa, esta variable no modifica tu prestación final.`,
+                            "text-xs text-cyan-300 mt-3 block bg-cyan-950/50 p-2.5 rounded-lg border border-cyan-800 leading-relaxed"
+                        );
+                    } else {
+                        msgParoTope.classList.add('hidden');
+                    }
                 }
             }
 
@@ -1487,7 +1629,7 @@
             resSalarioDiario.textContent = formatoMoneda.format(salarioDiario);
             resValorPorAno.textContent = formatoMoneda.format(valorDeUnDiaEnNegociacion);
             resSalarioAnual.textContent = formatoMoneda.format(salarioAnual);
-            resAntiguedad.textContent = `${añosDisplay} años y ${mesesDisplay} meses`;
+            resAntiguedad.textContent = formatearAntiguedad(antiguedad);
             resIndemnizacion.textContent = formatoMoneda.format(indemnizacionFinal);
             msgTope.style.display = haTopado ? 'block' : 'none';
             resFiniquito.textContent = formatoMoneda.format(totalFiniquito);
