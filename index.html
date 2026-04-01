@@ -1,9 +1,54 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es-ES" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Inteligente de ERE y Finiquito</title>
+    <title>Calculadora de ERE y Finiquito | Indemnización y Paro</title>
+    <meta name="description" content="Calcula indemnización por ERE, finiquito y paro en España. Sube tu nómina en PDF o ZIP con contraseña, o completa los datos manualmente. Todo se procesa en tu navegador.">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="theme-color" content="#047857">
+    <link rel="canonical" href="https://calculadoraere.es/">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Calculadora de ERE y Finiquito | Indemnización y Paro">
+    <meta property="og:description" content="Calcula indemnización por ERE, finiquito y paro en España con una herramienta privada que procesa tu nómina localmente en el navegador.">
+    <meta property="og:url" content="https://calculadoraere.es/">
+    <meta property="og:site_name" content="CalculadoraERE">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Calculadora de ERE y Finiquito | Indemnización y Paro">
+    <meta name="twitter:description" content="Calcula indemnización por ERE, finiquito y paro en España sin enviar tus datos fuera del navegador.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "@id": "https://calculadoraere.es/#website",
+                    "url": "https://calculadoraere.es/",
+                    "name": "CalculadoraERE",
+                    "alternateName": [
+                        "Calculadora ERE",
+                        "calculadoraere.es"
+                    ],
+                    "inLanguage": "es-ES"
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": "https://calculadoraere.es/#webpage",
+                    "url": "https://calculadoraere.es/",
+                    "name": "Calculadora de ERE y Finiquito | Indemnización y Paro",
+                    "description": "Calcula indemnización por ERE, finiquito y paro en España. Sube tu nómina en PDF o ZIP con contraseña, o completa los datos manualmente.",
+                    "isPartOf": {
+                        "@id": "https://calculadoraere.es/#website"
+                    },
+                    "inLanguage": "es-ES"
+                }
+            ]
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -32,8 +77,10 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <i class="fa-solid fa-shield-halved text-emerald-600 text-2xl mr-3"></i>
-                    <span class="font-bold text-xl tracking-tight text-gray-900">Calculadora<span class="text-emerald-600">ERE</span> <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full ml-2">100% Privado</span></span>
+                    <a href="./" class="flex items-center" aria-label="Inicio de CalculadoraERE">
+                        <i class="fa-solid fa-shield-halved text-emerald-600 text-2xl mr-3" aria-hidden="true"></i>
+                        <span class="font-bold text-xl tracking-tight text-gray-900">Calculadora<span class="text-emerald-600">ERE</span> <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full ml-2">100% Privado</span></span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -42,14 +89,19 @@
     <!-- Contenido Principal -->
     <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <div class="text-center mb-10">
+        <header class="text-center mb-10">
             <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                 Calcula tu indemnización, finiquito y paro
             </h1>
             <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
                 Sube tu nómina o rellena los datos manualmente. Soportamos <b>PDF</b> o archivos <b>ZIP con contraseña</b>. Tu privacidad está garantizada: procesamos todo localmente en tu navegador.
             </p>
-        </div>
+            <nav class="mt-6 flex flex-wrap items-center justify-center gap-3" aria-label="Atajos de contenido">
+                <a href="#upload-section" class="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 transition-colors">Ir a la calculadora</a>
+                <a href="#como-funciona" class="inline-flex items-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cómo funciona</a>
+                <a href="#preguntas-frecuentes" class="inline-flex items-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Preguntas frecuentes</a>
+            </nav>
+        </header>
 
         <!-- SECCIÓN 1: Entrada (archivo o manual) -->
         <div id="upload-section" class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 smooth-transition">
@@ -98,6 +150,61 @@
                 <p class="mt-3 text-xs text-gray-500">Podrás resetear y volver al modo de subida cuando quieras.</p>
             </div>
         </div>
+
+        <section id="como-funciona" class="mt-16 space-y-8" aria-labelledby="como-funciona-title">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-2">
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Calculadora laboral</p>
+                        <h2 id="como-funciona-title" class="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">Calculadora de ERE, finiquito e indemnización en España</h2>
+                        <p class="mt-4 text-base text-gray-600 leading-relaxed">
+                            Esta herramienta te ayuda a estimar la indemnización por despido colectivo o acuerdo de ERE, el finiquito ordinario y la prestación por desempleo a partir de tu salario, antigüedad, variables salariales, vacaciones pendientes y base de cotización.
+                        </p>
+                        <p class="mt-3 text-base text-gray-600 leading-relaxed">
+                            Puedes usar el escaneo de nómina en PDF o ZIP con contraseña para ahorrar tiempo, o introducir los datos a mano si prefieres revisar cada campo manualmente. En ambos casos, el cálculo se hace en tu navegador para mantener la privacidad de tu documentación laboral.
+                        </p>
+                    </div>
+                    <aside class="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
+                        <h3 class="text-lg font-semibold text-emerald-900">Qué calcula esta página</h3>
+                        <ul class="mt-4 space-y-3 text-sm text-emerald-900">
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Indemnización por días por año trabajado y tope de mensualidades.</li>
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Finiquito con vacaciones, pagas extra pendientes y falta de preaviso.</li>
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Estimación del paro según cotización, hijos a cargo y topes SEPE.</li>
+                        </ul>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                        <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Escaneo de nómina local</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        Si subes tu nómina, la calculadora intenta detectar salario fijo, fecha de antigüedad, IRPF y base de cotización. Esto acelera el cálculo inicial y reduce errores de transcripción.
+                    </p>
+                </article>
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                        <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Cálculo orientativo y editable</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        Puedes ajustar los días por año trabajado, los topes de mensualidades, el preaviso o las pagas extra para simular distintos escenarios de negociación dentro de un ERE.
+                    </p>
+                </article>
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Privacidad de tus datos</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        No necesitas enviar la nómina a un servidor externo. El tratamiento del PDF y el cálculo del ERE se hacen en el propio dispositivo, algo especialmente útil si manejas documentación sensible.
+                    </p>
+                </article>
+            </div>
+        </section>
 
         <!-- SECCIÓN 2: Carga / Procesamiento Local -->
         <div id="loading-section" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
@@ -473,6 +580,64 @@
                 </button>
             </div>
         </div>
+
+        <section id="preguntas-frecuentes" class="mt-16" aria-labelledby="preguntas-frecuentes-title">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700">Ayuda rápida</p>
+                    <h2 id="preguntas-frecuentes-title" class="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">Preguntas frecuentes sobre ERE, finiquito y paro</h2>
+                    <p class="mt-3 text-base text-gray-600 leading-relaxed">
+                        Estas respuestas resumen cómo interpretar el cálculo y qué datos conviene revisar antes de usar el resultado como referencia en una negociación o para preparar la documentación.
+                    </p>
+                </div>
+
+                <div class="mt-8 space-y-4">
+                    <details class="group rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                        <summary class="cursor-pointer list-none font-semibold text-gray-900 flex items-center justify-between gap-4">
+                            ¿Cómo se calcula la indemnización en un ERE?
+                            <i class="fa-solid fa-plus text-gray-400 group-open:hidden" aria-hidden="true"></i>
+                            <i class="fa-solid fa-minus text-gray-400 hidden group-open:inline-block" aria-hidden="true"></i>
+                        </summary>
+                        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+                            La calculadora combina salario diario, antigüedad computable y el número de días por año trabajado que quieras simular. Después aplica el tope de mensualidades configurado para mostrar una indemnización orientativa.
+                        </p>
+                    </details>
+
+                    <details class="group rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                        <summary class="cursor-pointer list-none font-semibold text-gray-900 flex items-center justify-between gap-4">
+                            ¿Qué incluye el finiquito además de la indemnización?
+                            <i class="fa-solid fa-plus text-gray-400 group-open:hidden" aria-hidden="true"></i>
+                            <i class="fa-solid fa-minus text-gray-400 hidden group-open:inline-block" aria-hidden="true"></i>
+                        </summary>
+                        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+                            El finiquito puede incluir vacaciones no disfrutadas, pagas extra pendientes si no están prorrateadas y compensación por falta de preaviso. La indemnización por ERE se muestra separada para que distingas cada concepto con claridad.
+                        </p>
+                    </details>
+
+                    <details class="group rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                        <summary class="cursor-pointer list-none font-semibold text-gray-900 flex items-center justify-between gap-4">
+                            ¿Puedo usar una nómina en ZIP con contraseña?
+                            <i class="fa-solid fa-plus text-gray-400 group-open:hidden" aria-hidden="true"></i>
+                            <i class="fa-solid fa-minus text-gray-400 hidden group-open:inline-block" aria-hidden="true"></i>
+                        </summary>
+                        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+                            Sí. La página admite ZIP con PDF dentro y solicita la contraseña para descomprimir el archivo localmente. Esto facilita trabajar con nóminas protegidas por la gestoría sin abandonar el navegador.
+                        </p>
+                    </details>
+
+                    <details class="group rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                        <summary class="cursor-pointer list-none font-semibold text-gray-900 flex items-center justify-between gap-4">
+                            ¿La estimación del paro es definitiva?
+                            <i class="fa-solid fa-plus text-gray-400 group-open:hidden" aria-hidden="true"></i>
+                            <i class="fa-solid fa-minus text-gray-400 hidden group-open:inline-block" aria-hidden="true"></i>
+                        </summary>
+                        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+                            No. La prestación por desempleo es orientativa y depende de la base de cotización de los últimos 180 días, de los hijos a cargo y de los topes vigentes del SEPE. Tómala como una referencia previa para revisar tu caso con mayor contexto.
+                        </p>
+                    </details>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- MODAL CONTRASEÑA ZIP -->
