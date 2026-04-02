@@ -151,61 +151,6 @@
             </div>
         </div>
 
-        <section id="como-funciona" class="mt-16 space-y-8" aria-labelledby="como-funciona-title">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-2">
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Calculadora laboral</p>
-                        <h2 id="como-funciona-title" class="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">Calculadora de ERE, finiquito e indemnización en España</h2>
-                        <p class="mt-4 text-base text-gray-600 leading-relaxed">
-                            Esta herramienta te ayuda a estimar la indemnización por despido colectivo o acuerdo de ERE, el finiquito ordinario y la prestación por desempleo a partir de tu salario, antigüedad, variables salariales, vacaciones pendientes y base de cotización.
-                        </p>
-                        <p class="mt-3 text-base text-gray-600 leading-relaxed">
-                            Puedes usar el escaneo de nómina en PDF o ZIP con contraseña para ahorrar tiempo, o introducir los datos a mano si prefieres revisar cada campo manualmente. En ambos casos, el cálculo se hace en tu navegador para mantener la privacidad de tu documentación laboral.
-                        </p>
-                    </div>
-                    <aside class="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                        <h3 class="text-lg font-semibold text-emerald-900">Qué calcula esta página</h3>
-                        <ul class="mt-4 space-y-3 text-sm text-emerald-900">
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Indemnización por días por año trabajado y tope de mensualidades.</li>
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Finiquito con vacaciones, pagas extra pendientes y falta de preaviso.</li>
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Estimación del paro según cotización, hijos a cargo y topes SEPE.</li>
-                        </ul>
-                    </aside>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                        <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Escaneo de nómina local</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
-                        Si subes tu nómina, la calculadora intenta detectar salario fijo, fecha de antigüedad, IRPF y base de cotización. Esto acelera el cálculo inicial y reduce errores de transcripción.
-                    </p>
-                </article>
-                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
-                        <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Cálculo orientativo y editable</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
-                        Puedes ajustar los días por año trabajado, los topes de mensualidades, el preaviso o las pagas extra para simular distintos escenarios de negociación dentro de un ERE.
-                    </p>
-                </article>
-                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
-                        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Privacidad de tus datos</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
-                        No necesitas enviar la nómina a un servidor externo. El tratamiento del PDF y el cálculo del ERE se hacen en el propio dispositivo, algo especialmente útil si manejas documentación sensible.
-                    </p>
-                </article>
-            </div>
-        </section>
-
         <!-- SECCIÓN 2: Carga / Procesamiento Local -->
         <div id="loading-section" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-emerald-600 mb-4"></div>
@@ -230,7 +175,7 @@
             </div>
             
             <!-- Columna Izquierda: Entradas y Negociación -->
-            <div class="lg:col-span-7 space-y-6">
+            <div id="inputs-panel" class="order-2 lg:order-1 lg:col-span-7 space-y-6">
                 <!-- 1. Tarjeta de Datos Extraídos -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
@@ -474,7 +419,7 @@
             </div>
 
             <!-- Columna Derecha: Resultados -->
-            <div class="lg:col-span-5 space-y-6">
+            <div id="results-panel" tabindex="-1" class="order-1 lg:order-2 lg:col-span-5 space-y-6">
                 <!-- Desglose ERE -->
                 <div class="bg-gray-900 rounded-2xl shadow-lg border border-gray-800 overflow-hidden text-white sticky top-6">
                     <div class="p-6">
@@ -580,6 +525,61 @@
                 </button>
             </div>
         </div>
+
+        <section id="como-funciona" class="mt-16 space-y-8" aria-labelledby="como-funciona-title">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-2">
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Calculadora laboral</p>
+                        <h2 id="como-funciona-title" class="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">Calculadora de ERE, finiquito e indemnización en España</h2>
+                        <p class="mt-4 text-base text-gray-600 leading-relaxed">
+                            Esta herramienta te ayuda a estimar la indemnización por despido colectivo o acuerdo de ERE, el finiquito ordinario y la prestación por desempleo a partir de tu salario, antigüedad, variables salariales, vacaciones pendientes y base de cotización.
+                        </p>
+                        <p class="mt-3 text-base text-gray-600 leading-relaxed">
+                            Puedes usar el escaneo de nómina en PDF o ZIP con contraseña para ahorrar tiempo, o introducir los datos a mano si prefieres revisar cada campo manualmente. En ambos casos, el cálculo se hace en tu navegador para mantener la privacidad de tu documentación laboral.
+                        </p>
+                    </div>
+                    <aside class="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
+                        <h3 class="text-lg font-semibold text-emerald-900">Qué calcula esta página</h3>
+                        <ul class="mt-4 space-y-3 text-sm text-emerald-900">
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Indemnización por días por año trabajado y tope de mensualidades.</li>
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Finiquito con vacaciones, pagas extra pendientes y falta de preaviso.</li>
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-2" aria-hidden="true"></i>Estimación del paro según cotización, hijos a cargo y topes SEPE.</li>
+                        </ul>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                        <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Escaneo de nómina local</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        Si subes tu nómina, la calculadora intenta detectar salario fijo, fecha de antigüedad, IRPF y base de cotización. Esto acelera el cálculo inicial y reduce errores de transcripción.
+                    </p>
+                </article>
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                        <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Cálculo orientativo y editable</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        Puedes ajustar los días por año trabajado, los topes de mensualidades, el preaviso o las pagas extra para simular distintos escenarios de negociación dentro de un ERE.
+                    </p>
+                </article>
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700">
+                        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Privacidad de tus datos</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-gray-600">
+                        No necesitas enviar la nómina a un servidor externo. El tratamiento del PDF y el cálculo del ERE se hacen en el propio dispositivo, algo especialmente útil si manejas documentación sensible.
+                    </p>
+                </article>
+            </div>
+        </section>
 
         <section id="preguntas-frecuentes" class="mt-16" aria-labelledby="preguntas-frecuentes-title">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-10">
@@ -726,6 +726,8 @@
         const contractSourceIcon = document.getElementById('contract-source-icon');
         const contractSourceText = document.getElementById('contract-source-text');
         const baseCotizacionHelp = document.getElementById('base-cotizacion-help');
+        const inputsPanel = document.getElementById('inputs-panel');
+        const resultsPanel = document.getElementById('results-panel');
 
         // Inputs Calculadora
         const inputSalario = document.getElementById('input-salario');
@@ -1007,6 +1009,43 @@
                 inputBaseCotizacion.classList.toggle('bg-cyan-50/50', !isManualMode);
                 inputBaseCotizacion.classList.toggle('bg-white', isManualMode);
             }
+
+            if (inputsPanel && resultsPanel) {
+                inputsPanel.classList.toggle('order-1', isManualMode);
+                inputsPanel.classList.toggle('order-2', !isManualMode);
+                resultsPanel.classList.toggle('order-2', isManualMode);
+                resultsPanel.classList.toggle('order-1', !isManualMode);
+            }
+        }
+
+        function scrollToWorkingArea({ focusResults = false, behavior = 'smooth' } = {}) {
+            const mobileLayout = window.innerWidth < 1024;
+            const target = (focusResults && mobileLayout && resultsPanel) ? resultsPanel : sectionCalculator;
+
+            if (!target) return;
+
+            window.requestAnimationFrame(() => {
+                target.scrollIntoView({ behavior, block: 'start' });
+
+                if (focusResults && mobileLayout && resultsPanel) {
+                    resultsPanel.focus({ preventScroll: true });
+                }
+            });
+        }
+
+        function mostrarCalculadora({ mode = 'file', focusResults = false, focusElement = null } = {}) {
+            sectionLoading.classList.add('hidden');
+            sectionUpload.classList.add('hidden');
+            sectionCalculator.classList.remove('hidden');
+            setEntryMode(mode);
+            calcularLiquidacion();
+
+            setTimeout(() => {
+                scrollToWorkingArea({ focusResults });
+                if (focusElement) {
+                    focusElement.focus({ preventScroll: true });
+                }
+            }, 80);
         }
 
         function openFilePicker() {
@@ -1021,15 +1060,11 @@
             errorModal.classList.add('hidden');
             passwordModal.classList.add('hidden');
             sectionLoading.classList.add('hidden');
-            sectionUpload.classList.add('hidden');
-            sectionCalculator.classList.remove('hidden');
-            setEntryMode('manual');
             limpiarAvisoExtraccion();
             currentZipFile = null;
             fileInput.value = "";
             if (fileInputFallback) fileInputFallback.value = "";
-            calcularLiquidacion();
-            setTimeout(() => inputSalario.focus(), 50);
+            mostrarCalculadora({ mode: 'manual', focusResults: false, focusElement: inputSalario });
         }
 
         function isZipFile(file) {
@@ -1575,11 +1610,7 @@
                 mostrarAvisoExtraccion(camposNoDetectados);
 
                 setTimeout(() => {
-                    sectionLoading.classList.add('hidden');
-                    sectionUpload.classList.add('hidden');
-                    sectionCalculator.classList.remove('hidden');
-                    setEntryMode('file');
-                    calcularLiquidacion();
+                    mostrarCalculadora({ mode: 'file', focusResults: true });
                 }, 800);
 
             } catch (error) {
@@ -1590,11 +1621,7 @@
 
         function closeErrorAndProceed() {
             errorModal.classList.add('hidden');
-            sectionLoading.classList.add('hidden');
-            sectionUpload.classList.add('hidden');
-            sectionCalculator.classList.remove('hidden');
-            setEntryMode('manual');
-            calcularLiquidacion();
+            mostrarCalculadora({ mode: 'manual', focusResults: false, focusElement: inputSalario });
         }
 
         function resetApp() {
@@ -1626,6 +1653,9 @@
             selectHijos.value = INITIAL_FORM_STATE.hijos;
             inputBaseCotizacion.value = INITIAL_FORM_STATE.baseCotizacion;
             msgParoTope.classList.add('hidden');
+            setTimeout(() => {
+                sectionUpload.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
         }
 
         // --- LÓGICA MATEMÁTICA PRINCIPAL Y PARO (SEPE) ---
