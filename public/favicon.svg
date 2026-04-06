@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">CalculadoraERE</title>
+  <desc id="desc">Icono verde con una calculadora blanca.</desc>
+  <rect width="64" height="64" rx="16" fill="#047857"/>
+  <path d="M32 8 48 14.5V28c0 11.7-6.5 22.4-16 28-9.5-5.6-16-16.3-16-28V14.5L32 8Z" fill="#059669"/>
+  <rect x="20" y="18" width="24" height="28" rx="5" fill="#ffffff"/>
+  <rect x="24" y="22" width="16" height="5" rx="2.5" fill="#047857"/>
+  <g fill="#10b981">
+    <rect x="24" y="31" width="4" height="4" rx="1"/>
+    <rect x="30" y="31" width="4" height="4" rx="1"/>
+    <rect x="36" y="31" width="4" height="4" rx="1"/>
+    <rect x="24" y="37" width="4" height="4" rx="1"/>
+    <rect x="30" y="37" width="4" height="4" rx="1"/>
+    <rect x="36" y="37" width="4" height="4" rx="1"/>
+  </g>
+</svg>

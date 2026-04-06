@@ -16,15 +16,70 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Resolve site configuration
+        shell: bash
+        run: |
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          owner_name="${GITHUB_REPOSITORY_OWNER}"
+          site_url="${{ vars.SITE_URL }}"
+          base_path="${{ vars.BASE_PATH }}"
+          site_name="${{ vars.SITE_NAME }}"
+
+          if [[ -z "$site_name" ]]; then
+            site_name="CalculadoraERE"
+          fi
+
+          if [[ -z "$site_url" ]]; then
+            if [[ -s CNAME ]]; then
+              site_url="https://$(tr -d '[:space:]' < CNAME)/"
+            else
+              site_url="https://${owner_name}.github.io/${repo_name}/"
+            fi
+          fi
+
+          if [[ "$site_url" != */ ]]; then
+            site_url="${site_url}/"
+          fi
+
+          if [[ -z "$base_path" ]]; then
+            if [[ -s CNAME ]]; then
+              base_path="/"
+            else
+              base_path="/${repo_name}/"
+            fi
+          fi
+
+          if [[ "$base_path" != "/" ]]; then
+            [[ "$base_path" != /* ]] && base_path="/$base_path"
+            [[ "$base_path" != */ ]] && base_path="${base_path}/"
+          fi
+
+          echo "VITE_SITE_URL=$site_url" >> "$GITHUB_ENV"
+          echo "VITE_BASE_PATH=$base_path" >> "$GITHUB_ENV"
+          echo "VITE_SITE_NAME=$site_name" >> "$GITHUB_ENV"
+
+          if [[ -s CNAME ]]; then
+            echo "VITE_CNAME=$(tr -d '[:space:]' < CNAME)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality checks
+        run: npm run check
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -32,8 +87,16 @@ jobs:
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
