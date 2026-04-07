@@ -15,11 +15,6 @@ interface FuenteSalarioConfig {
 
 const FUENTES_SALARIO: FuenteSalarioConfig[] = [
   {
-    id: 'salario_base',
-    bajaConfianza: false,
-    regexes: [/(?:SALARIO\s+BASE|SUELDO\s+BASE)[^\d]{0,180}(\d{1,3}(?:\.\d{3})*,\d{2})/i],
-  },
-  {
     id: 'rem_total',
     bajaConfianza: false,
     regexes: [

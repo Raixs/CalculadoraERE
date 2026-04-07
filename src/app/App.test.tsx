@@ -33,7 +33,7 @@ function buildExtraccionParcial(): DatosExtraidosNomina {
       irpf: false,
       comisiones: true,
     },
-    fuenteSalario: 'salario_base',
+    fuenteSalario: 'base_ss',
     salarioBajaConfianza: false,
     camposNoDetectados: [
       'Fecha de inicio (antigüedad)',

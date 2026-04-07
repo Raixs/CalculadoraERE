@@ -1,6 +1,5 @@
 export type FuenteSalarioNomina =
   | 'default'
-  | 'salario_base'
   | 'rem_total'
   | 'base_ss'
   | 'base_cotizacion'
